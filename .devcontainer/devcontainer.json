@@ -1,0 +1,21 @@
+{
+  "name": "<repo-name>",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "editorconfig.editorconfig"
+      ],
+      "settings": { "editor.formatOnSave": true }
+    }
+  },
+  "postCreateCommand": "cd src && dotnet restore && dotnet tool restore",
+  "remoteUser": "vscode"
+}

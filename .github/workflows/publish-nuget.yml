@@ -1,0 +1,74 @@
+name: Build and Deploy
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+env:
+  PACKAGES_URL: https://nuget.pkg.github.com
+
+jobs:
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.x.x
+    - name: Package
+      env:
+        TAG: ${{ github.ref_name }}
+      run: |
+        dotnet pack --configuration Release \
+          -p:Version="$TAG" \
+          -p:AssemblyVersion="${TAG%%.*}.0.0.0" \
+          -p:FileVersion="${TAG%%-*}" \
+          --output .
+    - name: Upload package artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: nupkg
+        path: src/*.nupkg
+
+  publish-github:
+    name: Publish to GitHub packages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+    - name: Download package artifact
+      uses: actions/download-artifact@v8
+      with:
+        name: nupkg
+    - name: Publish to GitHub packages
+      run: dotnet nuget push *.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.PACKAGES_URL }}/${{ github.repository_owner }}/index.json
+
+  publish-nuget:
+    name: Publish to NuGet
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - name: Download package artifact
+      uses: actions/download-artifact@v8
+      with:
+        name: nupkg
+    - name: NuGet login
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: kudima03
+    - name: Publish to NuGet
+      run: dotnet nuget push *.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
