@@ -21,4 +21,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Syntax highlighting with starry-night, GitHub's highlighter.
 * Math: `$x$`, `$`x`$`, `$$x$$` and ```` ```math ```` blocks typeset with MathJax.
 * Mermaid diagrams render with the default theme.
+* A weekly workflow pins the newest stable Chrome and its SHA-256 hashes.
 * Exit codes: 0 success, 1 arguments or I/O, 2 browser, 3 render.

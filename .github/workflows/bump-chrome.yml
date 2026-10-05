@@ -1,0 +1,31 @@
+name: Bump pinned Chrome
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    name: Pin the newest stable chrome-headless-shell
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Pin the newest version and hash the archives
+      run: scripts/bump-chrome.sh
+    - name: Open a pull request
+      uses: peter-evans/create-pull-request@v7
+      with:
+        branch: chore/bump-chrome
+        commit-message: "chore: bump pinned Chrome"
+        title: "chore: bump pinned Chrome"
+        body: |
+          Pins the newest stable `chrome-headless-shell` from Chrome for Testing and the SHA-256
+          of each release platform's archive (`scripts/bump-chrome.sh`).
+
+          The integration tests run against the new version in this pull request.
+        add-paths: src/Markdowned/Browser/browser.json
