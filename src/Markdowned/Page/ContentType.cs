@@ -27,6 +27,7 @@ public sealed record ContentType : IString
             ".webp" => "image/webp",
             ".ttf" => "font/ttf",
             ".woff2" => "font/woff2",
+            ".wasm" => "application/wasm",
             _ => "application/octet-stream",
         };
 

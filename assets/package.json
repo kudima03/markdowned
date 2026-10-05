@@ -1,0 +1,19 @@
+{
+  "name": "markdowned-assets",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Bundles the browser-side libraries that markdowned embeds into its page.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@wooorm/starry-night": "^3.0.0",
+    "github-markdown-css": "^5.9.0",
+    "mathjax-full": "^3.2.2",
+    "mermaid": "^11.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

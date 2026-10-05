@@ -35,6 +35,10 @@ public sealed record PageTests
         Assert.Contains("assets/github-markdown-light.css", paths);
         Assert.Contains("assets/fonts.css", paths);
         Assert.Contains("assets/page.css", paths);
+        Assert.Contains("assets/js/mathjax.js", paths);
+        Assert.Contains("assets/js/mermaid.js", paths);
+        Assert.Contains("assets/js/starry-night/index.js", paths);
+        Assert.Contains("assets/js/starry-night/onig.wasm", paths);
 
         foreach (
             string font in new[]
@@ -88,6 +92,7 @@ public sealed record PageTests
     [InlineData("a.webp", "image/webp")]
     [InlineData("a.ttf", "font/ttf")]
     [InlineData("a.woff2", "font/woff2")]
+    [InlineData("a.wasm", "application/wasm")]
     [InlineData("a.bin", "application/octet-stream")]
     public void KnowsContentTypes(string path, string expected)
     {

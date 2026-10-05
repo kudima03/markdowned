@@ -1,0 +1,499 @@
+import"./grammar-MHCU5XT2.js";var e={extensions:[],names:["bluespec-bh","bh","bluespec-classic"],patterns:[{include:"#comment_like"},{include:"#numeric_literals"},{include:"#string_literal"},{include:"#char_literal"},{match:"(?<!@|#)-\\}",name:"invalid"},{captures:{1:{name:"punctuation.paren.bh"},2:{name:"punctuation.paren.bh"}},match:"(\\()\\s*(\\))",name:"constant.language.unit.bh"},{captures:{1:{name:"punctuation.paren.bh"},2:{name:"keyword.operator.hash.bh"},3:{name:"keyword.operator.hash.bh"},4:{name:"punctuation.paren.bh"}},match:"(\\()(#)\\s*(#)(\\))",name:"constant.language.unit.unboxed.bh"},{captures:{1:{name:"punctuation.paren.bh"},2:{name:"punctuation.paren.bh"}},match:"(\\()\\s*,[\\s,]*(\\))",name:"support.constant.tuple.bh"},{captures:{1:{name:"punctuation.paren.bh"},2:{name:"keyword.operator.hash.bh"},3:{name:"keyword.operator.hash.bh"},4:{name:"punctuation.paren.bh"}},match:"(\\()(#)\\s*,[\\s,]*(#)(\\))",name:"support.constant.tuple.unboxed.bh"},{captures:{1:{name:"punctuation.bracket.bh"},2:{name:"punctuation.bracket.bh"}},match:"(\\[)\\s*(\\])",name:"constant.language.empty-list.bh"},{begin:"(\\b(?<!')(package)|^(signature))(\\b(?!'))",beginCaptures:{2:{name:"keyword.other.package.bh"},3:{name:"keyword.other.signature.bh"}},end:"(?=\\b(?<!')where\\b(?!'))",name:"meta.declaration.package.bh",patterns:[{include:"#comment_like"},{include:"#package_name"},{include:"#package_exports"},{match:"[a-z]+",name:"invalid"}]},{include:"#ffi"},{begin:"^(\\s*)(class)(\\s+(:?in?)coherent)?(\\b(?!'))",beginCaptures:{2:{name:"keyword.other.class.bh"},3:{name:"keyword.other.coherent.bh"}},end:`(?x) # Detect end of class declaration:
+         # 'where' keyword
+   (?=(?<!')\\bwhere\\b(?!'))  
+         # Decreasing indentation
+   |(?=\\}|;)      # Explicit indentation
+   |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+       \\1\\s+\\S    # - more indented, or
+     | \\s*        # - starts with whitespace, followed by:
+       (?: $      #   - the end of the line (i.e. empty line), or
+       |\\{-[^@]   #   - the start of a block comment, or
+       |--+       #   - the start of a single-line comment.
+          (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                  # The double dash may not be followed by other operator characters
+                  # (then it would be an operator, not a comment)
+     )`,name:"meta.declaration.class.bh",patterns:[{include:"#comment_like"},{include:"#where"},{include:"#type_signature"}]},{include:"#role_annotation"},{begin:"^(\\s*)(pattern)\\s+(.*?)\\s+(::|\u2237)(?![\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']])",beginCaptures:{2:{name:"keyword.other.pattern.bh"},3:{patterns:[{include:"#comma"},{include:"#data_constructor"}]},4:{name:"keyword.operator.double-colon.bh"}},end:`(?x) # Detect end of pattern type definition by decreasing indentation:
+  (?=\\}|;)       # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )
+`,name:"meta.declaration.pattern.type.bh",patterns:[{include:"#type_signature"}]},{begin:"^\\s*(pattern)\\b(?!')",captures:{1:{name:"keyword.other.pattern.bh"}},end:`(?x) # Detect end of pattern type definition by decreasing indentation:
+  (?=\\}|;)       # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )
+`,name:"meta.declaration.pattern.bh",patterns:[{include:"$self"}]},{begin:`(?x)
+  # Data declaration
+  ^(\\s*)(data|newtype|interface|struct)\\s+
+  # Keep consuming characters until:
+  (((?!
+  # the equals symbol or the start of a single-line comment, or
+    (?: 
+      (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]) # non-symbol
+      (?:=|--+)
+      (?![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])  # non-symbol
+    )
+  # the "where" or "deriving" keywords, or
+  | (?:\\b(?<!')(?:where|deriving)\\b(?!'))
+  # the start of a block comment.
+  | {-
+  #
+  ).)*)`,beginCaptures:{2:{name:"keyword.other.$2.bh"},3:{name:"keyword.other.$3.bh"},4:{patterns:[{include:"#type_signature"}]}},end:`(?x) # Detect end of data declaration: 
+     # Decreasing indentation
+   (?=\\}|;)      # Explicit indentation
+   |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+       \\1\\s+\\S    # - more indented, or
+     | \\s*        # - starts with whitespace, followed by:
+       (?: $      #   - the end of the line (i.e. empty line), or
+       |\\{-[^@]   #   - the start of a block comment, or
+       |--+       #   - the start of a single-line comment.
+          (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                  # The double dash may not be followed by other operator characters
+                  # (then it would be an operator, not a comment)
+     )`,name:"meta.declaration.$2.algebraic.bh",patterns:[{include:"#comment_like"},{include:"#deriving"},{include:"#forall"},{include:"#adt_constructor"},{include:"#data_context"},{include:"#record_decl"},{include:"#type_signature"}]},{begin:`(?x)
+  # Type declaration
+  ^(\\s*)(type)(?:\\s+(instance))?\\s+
+  # Keep consuming characters until:
+  (((?!
+  # the equals symbol, the start of a single-line comment, or a type signature
+    (?: 
+      (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]) # non-symbol
+      (?:=|--+|::|\u2237)
+      (?![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])  # non-symbol
+    )
+  # the start of a block comment.
+  | {-
+  #
+  ).)*)`,beginCaptures:{2:{name:"keyword.other.type.bh"},3:{name:"keyword.other.instance.bh"},4:{patterns:[{include:"#type_signature"}]}},end:`(?x) # Detect end of type definition by decreasing indentation:
+  (?=\\}|;)       # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )
+`,name:"meta.declaration.type.bh",patterns:[{include:"#type_signature"}]},{begin:"^(\\s*)(instance)(\\b(?!'))",beginCaptures:{2:{name:"keyword.other.instance.bh"}},end:`(?x) # Detect end of instance declaration:
+  # 'where' keyword
+  (?=\\b(?<!')(where)\\b(?!'))
+  # Decreasing indentation
+  |(?=\\}|;)      # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )
+`,name:"meta.declaration.instance.bh",patterns:[{include:"#comment_like"},{include:"#where"},{include:"#type_signature"}]},{begin:"^(\\s*)(import)(\\b(?!'))",beginCaptures:{2:{name:"keyword.other.import.bh"}},end:`(?x) # Detect end of import
+  # 'where' keyword
+  (?=\\b(?<!')(where)\\b(?!'))
+  # Decreasing indentation
+  |(?=\\}|;)      # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )
+`,name:"meta.import.bh",patterns:[{include:"#comment_like"},{include:"#where"},{captures:{1:{name:"keyword.other.$1.bh"}},match:"(qualified|as|hiding)"},{include:"#package_name"},{include:"#package_exports"}]},{include:"#deriving"},{include:"#layout_herald"},{include:"#keyword"},{captures:{1:{name:"keyword.other.fixity.$1.bh"},2:{patterns:[{include:"#comment_like"},{include:"#integer_literals"},{match:":[\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]*",name:"constant.other.operator.infix.bh"},{include:"#infix_op"}]}},match:"^\\s*(infix[lr]?)\\s+(.*)",name:"meta.fixity-declaration.bh"},{include:"#start_type_signature"},{include:"#overloaded_label"},{include:"#type_application"},{include:"#reserved_symbol"},{include:"#fun_decl"},{include:"#qualifier"},{match:":[\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]*",name:"constant.other.operator.infix.bh"},{include:"#data_constructor"},{include:"#prefix_op"},{include:"#infix_op"},{begin:"(\\()(#)\\s",beginCaptures:{1:{name:"punctuation.paren.bh"},2:{name:"keyword.operator.hash.bh"}},end:"(#)(\\))",endCaptures:{1:{name:"keyword.operator.hash.bh"},2:{name:"punctuation.paren.bh"}},patterns:[{include:"#comma"},{include:"$self"}]},{begin:"(\\()",beginCaptures:{1:{name:"punctuation.paren.bh"}},end:"(\\))",endCaptures:{1:{name:"punctuation.paren.bh"}},patterns:[{include:"#comma"},{include:"$self"}]},{include:"#quasi_quote"},{begin:"(\\[)",beginCaptures:{1:{name:"punctuation.bracket.bh"}},end:"(\\])",endCaptures:{1:{name:"punctuation.bracket.bh"}},patterns:[{include:"#comma"},{include:"$self"}]},{include:"#record"}],repository:{adt_constructor:{patterns:[{include:"#comment_like"},{begin:`(?x)
+  (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]) # non-symbol
+  (?:(=)|(\\|))
+  (?![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])  # non-symbol`,beginCaptures:{1:{name:"keyword.operator.eq.bh"},2:{name:"keyword.operator.pipe.bh"}},end:`(?x)
+  (?: # Infix data constructor
+    # First argument
+    (?:
+    # Simple type
+      (?<!')\\b((?:[\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'\\.])+)
+    # Type inside balanced parentheses
+    | ('? # Optional promotion tick
+        (?<paren>
+          \\(          # Opening parenthesis
+          (?:
+            [^\\(\\)]*  # Match non-parentheses
+          | \\g<paren> # or recurse into further depth
+          )*
+          \\)          # Closing parenthesis
+        )
+      )
+    # Type inside balanced brackets
+    | ('? # Optional promotion tick
+        (?<brac>
+          \\[          # Opening bracket
+          (?:
+            [^\\[\\]]*  # Match non-brackets
+          | \\g<brac>  # or recurse into further depth
+          )*
+          \\]          # Closing bracket
+        )
+      )
+    )
+    # Then either
+    \\s*
+      # - a symbolic infix constructor, or
+    (?:(?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])(:[\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]*)
+      # - an alphabetic infix constructor
+    | (\`)([\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)(\`)
+    )
+  ) # Otherwise, prefix data constructor, either:
+  | # - an alphabetic data constructor e.g. "Cons_123"
+    (?:(?<!')\\b([\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*))
+  | # - a symbolic (prefix) data constructor
+    (\\()\\s*(:[\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]*)\\s*(\\))
+  | # Otherwise, try to fail early to avoid excessive backtracking (https://github.com/JustusAdam/language-bh/issues/161)
+      # Fail when detecting a lowercase identifier and then something not starting with a tick or colon
+      (?=\\b(?<!')(?!(?:forall|deriving)\\s)[\\p{Ll}_]\\S+\\s+[^\`:])
+      # Fail when seeing another equal signs or pipe symbol
+     |(?=
+        (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]) # non-symbol
+        (?:=|\\|)
+        (?![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])  # non-symbol
+      )`,endCaptures:{1:{patterns:[{include:"#type_signature"}]},10:{name:"constant.other.bh"},11:{name:"punctuation.paren.bh"},12:{name:"constant.other.operator.prefix.bh"},13:{name:"punctuation.paren.bh"},2:{patterns:[{include:"#type_signature"}]},4:{patterns:[{include:"#type_signature"}]},6:{name:"constant.other.operator.infix.bh"},7:{name:"punctuation.backtick.bh"},8:{name:"constant.other.infix.bh"},9:{name:"punctuation.backtick.bh"}},patterns:[{include:"#comment_like"},{include:"#deriving"},{include:"#record_decl"},{include:"#forall"},{include:"#data_context"},{include:"#type_signature"}]}]},block_comment:{applyEndPatternLast:!0,begin:"\\{-",captures:{0:{name:"punctuation.definition.comment.bh"}},end:"-\\}",name:"comment.block.bh",patterns:[{include:"#block_comment"}]},char_literal:{captures:{1:{name:"punctuation.definition.string.begin.bh"},2:{name:"constant.character.escape.bh"},3:{name:"constant.character.escape.octal.bh"},4:{name:"constant.character.escape.hexadecimal.bh"},5:{name:"constant.character.escape.control.bh"},6:{name:"punctuation.definition.string.end.bh"}},match:`(?x)
+  (?<![\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'])
+  (')
+  (?:
+    [\\ -\\[\\]-~]                         # Basic Char
+  | (\\\\(?:NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE
+       |DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS
+       |US|SP|DEL|[abfnrtv\\\\\\"'\\\\&]))   # Escapes
+  | (\\\\o[0-7]+)                         # Octal Escapes
+  | (\\\\x[0-9A-Fa-f]+)                   # Hexadecimal Escapes
+  | (\\\\\\^[A-Z@\\[\\]\\\\\\^_])                 # Control Chars
+  )
+  (')
+`,name:"string.quoted.single.bh"},comma:{match:",",name:"punctuation.separator.comma.bh"},comment_like:{patterns:[{include:"#cpp"},{include:"#pragma"},{include:"#comments"}]},comments:{patterns:[{begin:"^(\\s*)(--\\s[\\|\\$])",beginCaptures:{2:{name:"punctuation.whitespace.comment.leading.bh"}},end:"(?=^(?!\\1--+(?![\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']])))",name:"comment.block.documentation.bh"},{begin:"(^[ \\t]+)?(--(@)\\s)",beginCaptures:{1:{name:"punctuation.whitespace.comment.leading.bh"}},end:"\\n",name:"comment.line.documentation.bh"},{applyEndPatternLast:!0,begin:"\\{-\\s?[\\|\\$\\*\\^]",captures:{0:{name:"punctuation.definition.comment.bh"}},end:"-\\}",name:"comment.block.documentation.bh",patterns:[{include:"#block_comment"}]},{begin:"(^[ \\t]+)?(?=--+(?![\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]))",beginCaptures:{1:{name:"punctuation.whitespace.comment.leading.bh"}},end:"(?!\\G)",patterns:[{begin:"--",beginCaptures:{0:{name:"punctuation.definition.comment.bh"}},end:"\\n",name:"comment.line.double-dash.bh"}]},{include:"#block_comment"}]},cpp:{captures:{1:{name:"punctuation.definition.preprocessor.c"}},match:"^(#).*$",name:"meta.preprocessor.c"},data_constructor:{patterns:[{match:"\\b(?<!')[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*(?![\\.'\\w])",name:"constant.other.bh"},{match:"(\\()\\s*(:[\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]*)\\s*(\\))",name:"constant.other.operator.bh"}]},data_context:{captures:{1:{patterns:[{include:"#comment_like"},{include:"#forall"},{begin:"(?='?\\()",end:"(?=\\))",patterns:[{include:"#type_signature"}]},{begin:"(?='?\\[)",end:"(?=\\])",patterns:[{include:"#type_signature"}]},{captures:{1:{patterns:[{include:"#comment_like"},{include:"#forall"},{include:"#record_decl_field"}]},2:{patterns:[{include:"#reserved_symbol"}]},3:{patterns:[{include:"#type_signature"}]}},match:`(?x)
+  (\\S*)\\s*
+  (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])
+  (::|\u2237|=)
+  (?![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])`},{include:"#type_signature"}]},2:{name:"keyword.operator.big-arrow.bh"}},match:`(?x)
+  (.*)
+  (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])
+  (=>|\u21D2)
+  (?![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])
+`},deriving:{patterns:[{begin:"^(\\s*)(deriving)\\s+(?:(via|stock|newtype|anyclass)\\s+)?",beginCaptures:{2:{name:"keyword.other.deriving.bh"},3:{name:"keyword.other.deriving.strategy.$3.bh"}},end:`(?x) # Detect end of deriving statement
+  # Decreasing indentation
+   (?=\\}|;)      # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )`,name:"meta.deriving.bh",patterns:[{include:"#comment_like"},{match:"(?<!')\\b(instance)\\b(?!')",name:"keyword.other.instance.bh"},{captures:{1:{name:"keyword.other.deriving.strategy.$1.bh"}},match:"(?<!')\\b(via|stock|newtype|anyclass)\\b(?!')"},{include:"#type_signature"}]},{begin:"(deriving)(?:\\s+(stock|newtype|anyclass))?\\s*(\\()",beginCaptures:{1:{name:"keyword.other.deriving.bh"},2:{name:"keyword.other.deriving.strategy.$2.bh"},3:{name:"punctuation.paren.bh"}},end:"(\\))",endCaptures:{1:{name:"punctuation.paren.bh"}},name:"meta.deriving.bh",patterns:[{include:"#type_signature"}]},{captures:{1:{name:"keyword.other.deriving.bh"},2:{name:"keyword.other.deriving.strategy.$2.bh"},3:{patterns:[{include:"#type_signature"}]},5:{name:"keyword.other.deriving.strategy.via.bh"},6:{patterns:[{include:"#type_signature"}]}},match:`(?x)
+  (deriving)(?:\\s+(stock|newtype|anyclass))?\\s+
+    ([\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)
+    (\\s+(via)\\s+(.*)$)?
+`,name:"meta.deriving.bh"},{match:"(?<!')\\b(via)\\b(?!')",name:"keyword.other.deriving.strategy.via.bh"}]},double_colon:{captures:{1:{name:"keyword.operator.double-colon.bh"}},match:"\\s*(::|\u2237)(?![\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']])\\s*"},export_constructs:{patterns:[{include:"#comment_like"},{begin:"\\b(?<!')(pattern)\\b(?!')",beginCaptures:{1:{name:"keyword.other.pattern.bh"}},end:`(?x)
+   # Data constructor
+   ([\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)
+   # Prefix form of symbolic constructor
+   | (\\()\\s*(:[\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]+)\\s*(\\))`,endCaptures:{1:{name:"constant.other.bh"},2:{name:"punctuation.paren.bh"},3:{name:"constant.other.operator.prefix.bh"},4:{name:"punctuation.paren.bh"}},patterns:[{include:"#comment_like"}]},{begin:"\\b(?<!')(type)\\b(?!')",beginCaptures:{1:{name:"keyword.other.type.bh"}},end:"(?=,|\\))",patterns:[{include:"#comment_like"},{include:"#reserved_symbol"},{include:"#type_constructor"},{include:"#type_operator"}]},{include:"#record_wildcard"},{include:"#reserved_symbol"},{match:"(\\()\\s*(:[\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]*)\\s*(\\))",name:"storage.type.operator.bh"},{match:"(?<!')\\b[\\p{Ll}_][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*",name:"entity.name.function.bh"},{match:"(?<!')\\b[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*",name:"storage.type.bh"},{include:"#prefix_op"}]},ffi:{begin:"^(\\s*)(foreign)\\s+(import|export)\\s+",beginCaptures:{2:{name:"keyword.other.foreign.bh"},3:{name:"keyword.other.$3.bh"}},end:`(?x) # Detect end of FFI block by decreasing indentation:
+  (?=\\}|;)       # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )
+`,name:"meta.$3.foreign.bh",patterns:[{include:"#comment_like"},{captures:{1:{name:"keyword.other.calling-convention.$1.bh"}},match:"\\b(?<!')(ccall|cplusplus|dotnet|jvm|stdcall|prim|capi)\\s+"},{begin:`(?=")|(?=\\b(?<!')([\\p{Ll}_][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)\\b(?!'))`,end:"(?=(::|\u2237)(?![\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]))",patterns:[{include:"#comment_like"},{captures:{1:{name:"keyword.other.safety.$1.bh"},2:{name:"entity.name.foreign.bh",patterns:[{include:"#string_literal"}]},3:{name:"entity.name.function.bh"},4:{name:"entity.name.function.infix.bh"}},match:`(?x)
+  \\b(?<!')(safe|unsafe|interruptible)\\b(?!')
+  \\s*
+  ("(?:\\\\"|[^"])*")?
+  \\s*
+  (?:
+    (?:\\b(?<!'')([\\p{Ll}_][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)\\b(?!'))
+   |(?:\\(\\s*(?!--+\\))([\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]+)\\s*\\))
+  )
+`},{captures:{1:{name:"keyword.other.safety.$1.bh"},2:{name:"entity.name.foreign.bh",patterns:[{include:"#string_literal"}]}},match:`(?x)
+  \\b(?<!')(safe|unsafe|interruptible)\\b(?!')
+  \\s*
+  ("(?:\\\\"|[^"])*")?
+  \\s*$
+`},{captures:{0:{name:"entity.name.foreign.bh",patterns:[{include:"#string_literal"}]}},match:`(?x)
+  "(?:\\\\"|[^"])*"`},{captures:{1:{name:"entity.name.function.bh"},2:{name:"punctuation.paren.bh"},3:{name:"entity.name.function.infix.bh"},4:{name:"punctuation.paren.bh"}},match:`(?x)
+   (?:\\b(?<!'')([\\p{Ll}_][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)\\b(?!'))
+  |(?:(\\()\\s*(?!--+\\))([\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]+)\\s*(\\)))
+`}]},{include:"#double_colon"},{include:"#type_signature"}]},float_literals:{captures:{1:{name:"constant.numeric.floating.decimal.bh"},2:{name:"constant.numeric.floating.hexadecimal.bh"}},match:`(?x)
+  \\b(?<!')
+  (?:  # Decimal
+    ([0-9][_0-9]*\\.[0-9][_0-9]*(?:[eE][-+]?[0-9][_0-9]*)?
+    |[0-9][_0-9]*[eE][-+]?[0-9][_0-9]*
+    )
+  |    # Hexadecimal
+    (0[xX]_*[0-9a-fA-F][_0-9a-fA-F]*\\.[0-9a-fA-F][_0-9a-fA-F]*(?:[pP][-+]?[0-9][_0-9]*)?
+    |0[xX]_*[0-9a-fA-F][_0-9a-fA-F]*[pP][-+]?[0-9][_0-9]*
+    )
+  )\\b(?!')`},forall:{begin:`(?x)
+  # Alphabetic forall
+  (?:
+  \\b(?<!')
+  (forall)
+  \\b(?!')
+  )
+  |
+  # Symbolic forall
+  (?:
+  # Not preceded by a symbol except reserved symbols
+  (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"'']])
+  (\u2200)
+  # Not followed by a symbol except reserved symbols
+  (?![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"'']])
+  )`,beginCaptures:{1:{name:"keyword.other.forall.bh"},2:{name:"keyword.other.forall.bh"}},end:"(\\.)|(->|\u2192)",endCaptures:{1:{name:"keyword.operator.period.bh"},2:{name:"keyword.operator.arrow.bh"}},patterns:[{include:"#comment_like"},{include:"#type_variable"},{include:"#type_signature"}]},fun_decl:{begin:`(?x)^(\\s*)
+  (primitive\\s+)?
+  (type\\s+)?
+  (?<fn>
+    (?:
+      [\\p{Ll}_\\p{Lu}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*\\#*
+    | \\(\\s*
+        (?!--+\\))
+        [\\p{S}\\p{P}&&[^(),:;\\[\\]\`{}_"']]
+        [\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]*
+      \\s*\\)
+    )
+    (?:\\s*,\\s*\\g<fn>)?
+  )
+  \\s*(?<![\\p{S}\\p{P}&&[^\\),;\\]\`}_"']])(::|\u2237)(?![\\p{S}\\p{P}&&[^\\(,;\\[\`{_"']])
+`,beginCaptures:{2:{name:"keyword.other.primitive.bh"},3:{name:"keyword.other.type.bh"},4:{name:"entity.name.function.bh",patterns:[{include:"#reserved_symbol"},{include:"#prefix_op"}]},5:{name:"keyword.operator.double-colon.bh"}},end:`(?x)
+  # End of type annotation:
+    # To the left of a reserved symbolic keyword such as = or <-
+  (?= 
+      # non-symbolic character
+      (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])
+      # symbolic keyword except (->)
+      ((<-|\u2190)|(=)|(-<|\u21A2)|(-<<|\u291B))
+      # non-symbolic character
+      ([(),;\\[\\]\`{}_"']|[^\\p{S}\\p{P}])
+  )
+  # Decreasing indentation:
+  |(?=\\}|;)      # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )
+`,name:"meta.function.type-declaration.bh",patterns:[{include:"#type_signature"}]},gadt_constructor:{patterns:[{begin:`(?x)
+   ^(\\s*)
+      (?:
+        (\\b(?<!')[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)
+      |(\\()\\s*(:[\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]*)\\s*(\\))
+      )`,beginCaptures:{2:{name:"constant.other.bh"},3:{name:"punctuation.paren.bh"},4:{name:"constant.other.operator.prefix.bh"},5:{name:"punctuation.paren.bh"}},end:`(?x)
+  # GADT constructor ends
+  (?=\\b(?<!'')deriving\\b(?!'))  
+        # Decreasing indentation
+  |(?=\\}|;)      # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )
+`,patterns:[{include:"#comment_like"},{include:"#deriving"},{include:"#double_colon"},{include:"#record_decl"},{include:"#type_signature"}]},{begin:`(?x)
+  (\\b(?<!')[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}]*) # named constructor
+ |(\\()\\s*(:[\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]*)\\s*(\\))    # prefix operator`,beginCaptures:{1:{name:"constant.other.bh"},2:{name:"punctuation.paren.bh"},3:{name:"constant.other.operator.prefix.bh"},4:{name:"punctuation.paren.bh"}},end:"(?=;|\\}|$)",patterns:[{include:"#comment_like"},{include:"#deriving"},{include:"#double_colon"},{include:"#record_decl"},{include:"#type_signature"}]}]},infix_op:{patterns:[{captures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"entity.name.namespace.bh"},3:{name:"keyword.operator.infix.bh"}},match:`(?x)
+  ((?:(?<!'')('')?[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'']*\\.)*)
+    (\\#+|[\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]+(?<!\\#))`},{captures:{1:{name:"punctuation.backtick.bh"},2:{name:"entity.name.namespace.bh"},3:{patterns:[{include:"#data_constructor"}]},4:{name:"punctuation.backtick.bh"}},match:"(`)((?:[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'']*\\.)*)([\\p{Ll}\\p{Lu}_][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'']*)(`)",name:"keyword.operator.function.infix.bh"}]},inline_phase:{begin:"\\[",beginCaptures:{0:{name:"punctuation.bracket.bh"}},end:"\\]",endCaptures:{0:{name:"punctuation.bracket.bh"}},name:"meta.inlining-phase.bh",patterns:[{match:"~",name:"punctuation.tilde.bh"},{include:"#integer_literals"},{match:"\\w*",name:"invalid"}]},integer_literals:{captures:{1:{name:"constant.numeric.integral.decimal.bh"},2:{name:"constant.numeric.integral.hexadecimal.bh"},3:{name:"constant.numeric.integral.octal.bh"},4:{name:"constant.numeric.integral.binary.bh"}},match:`(?x)
+  \\b(?<!')
+  (?:
+    ([0-9][_0-9]*)                    # Decimal integer
+  | (0[xX]_*[0-9a-fA-F][_0-9a-fA-F]*) # Hexadecimal integer
+  | (0[oO]_*[0-7][_0-7]*)             # Octal integer
+  | (0[bB]_*[01][_01]*)               # Binary integer
+  )
+  \\b(?!')`},keyword:{captures:{1:{name:"keyword.other.$1.bh"},2:{name:"keyword.control.$2.bh"}},match:"\\b(?<!')(?:(where|when|let|letseq|in)|(do|module|rules|action|if|then|else|case(?:s)?|of|verilog|synthesize))\\b(?!')"},layout_herald:{begin:`(?x)
+  (?:(?<!')\\b(?:(where|let|letseq|do|module|rules|action)|(of))|(\\\\\\s*case(?:s)?))
+  \\s*(\\{)(?!-)`,beginCaptures:{1:{name:"keyword.other.$1.bh"},2:{name:"keyword.control.of.bh"},3:{name:"keyword.control.lambda-case.bh"},4:{name:"punctuation.brace.bh"}},end:"(\\})",endCaptures:{1:{name:"punctuation.brace.bh"}},patterns:[{include:"$self"},{match:";",name:"punctuation.semicolon.bh"}]},numeric_literals:{patterns:[{include:"#float_literals"},{include:"#integer_literals"}]},overloaded_label:{patterns:[{captures:{1:{name:"keyword.operator.prefix.hash.bh"},2:{patterns:[{include:"#string_literal"}]}},match:`(?x) 
+  (?<![\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}\\p{S}\\p{P}&&[^(,;\\[\`{]]) # Disallow closing characters
+  (\\#)
+    (?:
+    # String
+    ("(?:\\\\"|[^"])*")
+    # Sequence of allowed label identifiers
+    |[\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'\\.]+
+    )`,name:"entity.name.label.bh"}]},package_exports:{applyEndPatternLast:!0,begin:"\\(",beginCaptures:{0:{name:"punctuation.paren.bh"}},end:"\\)",endCaptures:{0:{name:"punctuation.paren.bh"}},name:"meta.declaration.exports.bh",patterns:[{include:"#comment_like"},{captures:{1:{name:"keyword.other.package.bh"}},match:"\\b(?<!')(package)\\b(?!')"},{include:"#comma"},{include:"#export_constructs"},{begin:"\\(",beginCaptures:{0:{name:"punctuation.paren.bh"}},end:"\\)",endCaptures:{0:{name:"punctuation.paren.bh"}},patterns:[{include:"#comment_like"},{include:"#record_wildcard"},{match:"(\\()\\s*(:[\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]*)\\s*(\\))",name:"constant.other.operator.prefix.bh"},{include:"#export_constructs"},{include:"#comma"}]}]},package_name:{match:"(?<conid>[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*(\\.\\g<conid>)?)",name:"entity.name.namespace.bh"},pragma:{begin:"\\{-#",end:"#-\\}",name:"meta.preprocessor.bh",patterns:[{include:"#comments"},{match:`(?xi) \\b(?<!')
+  (synthesize|verilog|noReady|alwaysEnabled|parameter|no_default_clock|no_default_reset|gate_input_clocks|clock_family|clock_prefix|gate_prefix|reset_prefix|alwaysReady|noReady|alwaysEnabled|scanInsert|bitBlast|CLK|RSTN|options|deprecate|properties)\\b(?!')`,name:"keyword.other.preprocessor.pragma.bh"},{match:`(?xi) \\b(?<!')
+  (prefixs?|arg_names|ready|enable|result|always_ready|always_enabled)\\b(?!')`,name:"keyword.other.preprocessor.pragma.bh"}]},prefix_op:{patterns:[{captures:{1:{name:"punctuation.paren.bh"},2:{name:"entity.name.function.infix.bh"},3:{name:"punctuation.paren.bh"}},match:`(?x)
+  (\\()\\s*(?!(?:--+|\\.\\.)\\))(\\#+|[\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]+(?<!\\#))\\s*(\\))`}]},qualifier:{match:"\\b(?<!')[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*\\.",name:"entity.name.namespace.bh"},quasi_quote:{patterns:[{begin:`(?x)
+  (\\[)
+  (e|d|p)?
+  (\\|(?:\\|(?!\\]))?)`,beginCaptures:{1:{name:"keyword.operator.quasi-quotation.begin.bh"},2:{name:"entity.name.quasi-quoter.bh"},3:{name:"keyword.operator.quasi-quotation.begin.bh"}},end:"\\3\\]",endCaptures:{0:{name:"keyword.operator.quasi-quotation.end.bh"}},name:"meta.quasi-quotation.bh",patterns:[{include:"$self"}]},{begin:`(?x)
+  (\\[)
+  (t)
+  (\\|(?:\\|(?!\\]))?)`,beginCaptures:{1:{name:"keyword.operator.quasi-quotation.begin.bh"},2:{name:"entity.name.quasi-quoter.bh"},3:{name:"keyword.operator.quasi-quotation.begin.bh"}},end:"\\3\\]",endCaptures:{0:{name:"keyword.operator.quasi-quotation.end.bh"}},name:"meta.quasi-quotation.bh",patterns:[{include:"#type_signature"}]},{begin:`(?x)
+  (\\[)
+  (?:(\\$\\$)|(\\$))?
+  (?!'\\|')                                             # Don't parse ['|'...] as a quasi quotation
+  ((?:[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*\\.)*) # Optional qualifier
+  ((?:[^\\s\\p{S}\\p{P}]|['_])*)                          # Quasi-quoter
+  (\\|)`,beginCaptures:{1:{name:"keyword.operator.quasi-quotation.begin.bh"},2:{name:"keyword.operator.prefix.double-dollar.bh"},3:{name:"keyword.operator.prefix.dollar.bh"},4:{name:"entity.name.namespace.bh"},5:{name:"entity.name.quasi-quoter.bh"},6:{name:"keyword.operator.quasi-quotation.begin.bh"}},end:"\\|\\]",endCaptures:{0:{name:"keyword.operator.quasi-quotation.end.bh"}},name:"meta.quasi-quotation.bh meta.embedded.block.$5"}]},record:{begin:"({)(?!-)",beginCaptures:{1:{name:"punctuation.brace.bh"}},end:"(?<!-)(})",endCaptures:{1:{name:"punctuation.brace.bh"}},name:"meta.record.bh",patterns:[{include:"#comment_like"},{include:"#record_field"}]},record_decl:{begin:"({)(?!-)",beginCaptures:{1:{name:"punctuation.brace.bh"}},end:"(?<!-)(})",endCaptures:{1:{name:"punctuation.brace.bh"}},name:"meta.record.definition.bh",patterns:[{include:"#comment_like"},{include:"#record_decl_field"}]},record_decl_field:{begin:`(?x)
+  (?:([\\p{Ll}_][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)
+    |(\\()\\s*([\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]+)\\s*(\\))
+  )
+`,beginCaptures:{1:{name:"variable.other.member.definition.bh"},2:{name:"punctuation.paren.bh"},3:{name:"variable.other.member.definition.bh"},4:{name:"punctuation.paren.bh"}},end:"(,)|(?=})",endCaptures:{1:{name:"punctuation.comma.bh"}},patterns:[{include:"#comment_like"},{include:"#comma"},{include:"#double_colon"},{include:"#type_signature"},{include:"#record_decl_field"}]},record_field:{patterns:[{begin:`(?x)
+  (?:([\\p{Ll}\\p{Lu}_][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}\\.']*)
+    |(\\()\\s*([\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]+)\\s*(\\))
+  )
+`,beginCaptures:{1:{name:"variable.other.member.bh",patterns:[{include:"#qualifier"}]},2:{name:"punctuation.paren.bh"},3:{name:"variable.other.member.bh"},4:{name:"punctuation.paren.bh"}},end:"(,)|(?=})",endCaptures:{1:{name:"punctuation.comma.bh"}},patterns:[{include:"#comment_like"},{include:"#comma"},{include:"$self"}]},{include:"#record_wildcard"}]},record_wildcard:{captures:{1:{name:"variable.other.member.wildcard.bh"}},match:`(?x)
+  (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])
+  (\\.\\.)
+  (?![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])`},reserved_symbol:{patterns:[{captures:{1:{name:"keyword.operator.double-dot.bh"},10:{name:"keyword.operator.arrow.tail.bh"},11:{name:"keyword.operator.arrow.tail.double.bh"},2:{name:"keyword.operator.colon.bh"},3:{name:"keyword.operator.eq.bh"},4:{name:"keyword.operator.lambda.bh"},5:{name:"keyword.operator.pipe.bh"},6:{name:"keyword.operator.arrow.left.bh"},7:{name:"keyword.operator.arrow.bh"},8:{name:"keyword.operator.arrow.left.tail.bh"},9:{name:"keyword.operator.arrow.left.tail.double.bh"}},match:`(?x)
+  (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"'']])
+  (?:
+     (\\.\\.)
+    |(:)
+    |(=)
+    |(\\\\)     # \u03BB not reserved as it is a letter
+    |(\\|)
+    |(<-|\u2190)
+    |(->|\u2192)
+    |(-<|\u21A2)
+    |(-<<|\u291B)
+    |(>-|\u291A)
+    |(>>-|\u291C)
+  )
+  (?![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"'']])`},{captures:{1:{name:"keyword.operator.postfix.hash.bh"}},match:`(?x)
+  (?<=[\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}\\p{S}\\p{P}&&[^\\#,;\\[\`{]]) # Require closing characters
+  (\\#+)
+  (?![\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}\\p{S}\\p{P}&&[^),;\\]\`}]])   # Disallow opening character`},{captures:{1:{name:"keyword.operator.infix.tight.at.bh"}},match:`(?x)
+  (?<=[\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'\\)\\}\\]]) # Require closing characters
+  (@)
+  (?=[\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'\\(\\[\\{]) # Require opening character`},{captures:{1:{name:"keyword.operator.prefix.tilde.bh"},2:{name:"keyword.operator.prefix.bang.bh"},3:{name:"keyword.operator.prefix.minus.bh"},4:{name:"keyword.operator.prefix.double-dollar.bh"},5:{name:"keyword.operator.prefix.dollar.bh"},6:{name:"keyword.operator.prefix.modifier.bh"}},match:`(?x)
+  (?<![\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}\\p{S}\\p{P}&&[^(,;\\[\`{]])  # Disallow closing characters
+  (?:(~)|(!)|(-)|(\\$\\$)|(\\$)|(%))
+  (?=[\\p{Ll}_'\\p{Lu}\\p{Lt}\\p{Nd}\\(\\{\\[]) # Require opening character (non operator symbol)`}]},role_annotation:{patterns:[{begin:"^(\\s*)(type)\\s+(role)\\b(?!')",beginCaptures:{2:{name:"keyword.other.type.bh"},3:{name:"keyword.other.role.bh"}},end:`(?x) # Detect end of block by decreasing indentation:
+  (?=\\}|;)       # Explicit indentation
+  |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+      \\1\\s+\\S    # - more indented, or
+    | \\s*        # - starts with whitespace, followed by:
+      (?: $      #   - the end of the line (i.e. empty line), or
+      |\\{-[^@]   #   - the start of a block comment, or
+      |--+       #   - the start of a single-line comment.
+         (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                 # The double dash may not be followed by other operator characters
+                 # (then it would be an operator, not a comment)
+    )`,name:"meta.role-annotation.bh",patterns:[{include:"#comment_like"},{include:"#type_constructor"},{captures:{1:{name:"keyword.other.role.$1.bh"}},match:"\\b(?<!')(nominal|representational|phantom)\\b(?!')"}]}]},start_type_signature:{patterns:[{begin:"^(\\s*)(::|\u2237)(?![\\p{S}\\p{P}&&[^\\(,;\\[`{_\"']])\\s*",beginCaptures:{2:{name:"keyword.operator.double-colon.bh"}},end:`(?x)
+  # End type annotation when seeing one of:
+  (?=
+    \\#?\\)                             # closing parenthesis
+    |\\]                               # closing bracket
+    |,                                # comma
+    |(?<!')\\b(in|then|else|of)\\b(?!') # keyword
+    |                                 # symbolic keyword except (->)
+      (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])
+      (?:
+         (\\\\|\u03BB)
+        |(<-|\u2190)
+        |(=)
+        |(-<|\u21A2)
+        |(-<<|\u291B)
+      )
+      ([(),;\\[\\]\`{}_"']|[^\\p{S}\\p{P}])
+    |(\\#|@)-\\}                             # End of annotation block (pragma)
+    # Decreasing indentation:
+    | (?=\\}|;)     # Explicit indentation
+    |^(?!          # Implicit indentation: end match on newline *unless* the new line is either:
+        \\1\\s*\\S    # - equally indented, or
+      | \\s*        # - starts with whitespace, followed by:
+        (?: $      #   - the end of the line (i.e. empty line), or
+        |\\{-[^@]   #   - the start of a block comment, or
+        |--+       #   - the start of a single-line comment.
+           (?![\\p{S}\\p{P}&&[^(),;\\[\\]{}\`_"']]).*$) # non-symbol
+                   # The double dash may not be followed by other operator characters
+                   # (then it would be an operator, not a comment)
+      )
+  )`,name:"meta.type-declaration.bh",patterns:[{include:"#type_signature"}]},{begin:"(?<![\\p{S}\\p{P}&&[^\\(,;\\[`{_\"']])(::|\u2237)(?![\\p{S}\\p{P}&&[^\\(,;\\[`{_\"']])",beginCaptures:{1:{name:"keyword.operator.double-colon.bh"}},end:`(?x)
+  # End type annotation when seeing one of:
+  (?=
+    \\#?\\)                             # closing parenthesis
+    |\\]                               # closing bracket
+    |,                                # comma
+    |\\b(?<!')(in|then|else|of)\\b(?!') # keyword
+    |(\\#|@)-\\}                        # End of annotation block (Liquidbh or pragma)
+    |                                 # symbolic keyword except (->)
+      (?<![\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']])
+      (?:
+         (\\\\|\u03BB)
+        |(<-|\u2190)
+        |(=)
+        |(-<|\u21A2)
+        |(-<<|\u291B)
+      )
+      ([(),;\\[\\]\`{}_"']|[^\\p{S}\\p{P}])
+    # Indentation 
+    |(?=\\}|;)      # Explicit indentation
+    |$             # End of line
+  )`,patterns:[{include:"#type_signature"}]}]},string_literal:{begin:'"',beginCaptures:{0:{name:"punctuation.definition.string.begin.bh"}},end:'"',endCaptures:{0:{name:"punctuation.definition.string.end.bh"}},name:"string.quoted.double.bh",patterns:[{match:`\\\\(NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE|DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS|US|SP|DEL|[abfnrtv\\\\\\"'\\&])`,name:"constant.character.escape.bh"},{match:"\\\\o[0-7]+|\\\\x[0-9A-Fa-f]+|\\\\[0-9]+",name:"constant.character.escape.octal.bh"},{match:"\\\\\\^[A-Z@\\[\\]\\\\\\^_]",name:"constant.character.escape.control.bh"},{begin:"\\\\\\s",beginCaptures:{0:{name:"constant.character.escape.begin.bh"}},end:"\\\\",endCaptures:{0:{name:"constant.character.escape.end.bh"}},patterns:[{match:"\\S+",name:"invalid.illegal.character-not-allowed-here.bh"}]}]},type_application:{patterns:[{captures:{1:{name:"keyword.operator.prefix.at.bh"},2:{name:"support.constant.unit.bh"}},match:'(?<=[\\s,;\\[\\]{}"])(@)(\\(\\s*\\))',name:"meta.type-application.bh"},{begin:`(?<=[\\s,;\\[\\]{}"])(@)(')?(\\()`,beginCaptures:{1:{name:"keyword.operator.prefix.at.bh"},2:{name:"keyword.operator.promotion.bh"},3:{name:"punctuation.paren.bh"}},end:"\\)",endCaptures:{0:{name:"punctuation.paren.bh"}},name:"meta.type-application.bh",patterns:[{include:"#type_signature"}]},{begin:`(?<=[\\s,;\\[\\]{}"])(@)(')?(\\[)`,beginCaptures:{1:{name:"keyword.operator.prefix.at.bh"},2:{name:"keyword.operator.promotion.bh"},3:{name:"punctuation.bracket.bh"}},end:"\\]",endCaptures:{0:{name:"punctuation.bracket.bh"}},name:"meta.type-application.bh",patterns:[{include:"#type_signature"}]},{begin:'(?<=[\\s,;\\[\\]{}"])(@)(?=\\")',beginCaptures:{1:{name:"keyword.operator.prefix.at.bh"}},end:'(?<=\\")',name:"meta.type-application.bh",patterns:[{include:"#string_literal"}]},{begin:`(?<=[\\s,;\\[\\]{}"])(@)(?=[\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'])`,beginCaptures:{1:{name:"keyword.operator.prefix.at.bh"}},end:"(?![\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}'])",name:"meta.type-application.bh",patterns:[{include:"#type_signature"}]}]},type_constructor:{patterns:[{captures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"entity.name.namespace.bh"},3:{name:"storage.type.bh"}},match:`(?x)
+  # Optional promotion tick
+    (')?
+  # Optional qualified name
+    ((?:\\b[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*\\.)*)
+  # Type constructor proper
+    (\\b[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)`},{captures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"punctuation.paren.bh"},3:{name:"entity.name.namespace.bh"},4:{name:"storage.type.operator.bh"},5:{name:"punctuation.paren.bh"}},match:`(?x)
+  # Optional promotion tick
+    (')?
+  # Opening parenthesis
+    (\\()\\s*
+  # Optional qualified name
+    ((?:[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*\\.)*)
+  # Type operator proper
+    ([\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]+)
+  # Closing parenthesis
+    \\s*(\\))`}]},type_operator:{patterns:[{captures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"entity.name.namespace.bh"},3:{name:"storage.type.operator.infix.bh"}},match:`(?x)
+  # Optional promotion tick
+    (?:(?<!')('))?
+  # Optional qualified name
+    ((?:\\b[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*\\.)*)
+  # Type operator proper
+    (?![#@]?-})(\\#+|[\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']]+(?<!\\#))
+    #((?:[\\p{S}\\p{P}&&[^(),;\\[\\]\`{}_"']&&[^#@]]|[@#](?!-}))+)`},{captures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"punctuation.backtick.bh"},3:{name:"entity.name.namespace.bh"},4:{name:"storage.type.infix.bh"},5:{name:"punctuation.backtick.bh"}},match:`(?x)
+  # Optional promotion tick
+    (')?
+  # Opening backtick
+    (\\\`)
+  # Optional qualified name
+    ((?:[\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*\\.)*)
+  # Type constructor proper
+    ([\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)
+  # Closing backtick
+    (\`)`}]},type_signature:{patterns:[{include:"#comment_like"},{captures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"punctuation.paren.bh"},3:{name:"punctuation.paren.bh"}},match:"(')?(\\()\\s*(\\))",name:"support.constant.unit.bh"},{captures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"punctuation.paren.bh"},3:{name:"punctuation.paren.bh"}},match:"(')?(\\()\\s*,[\\s,]*(\\))",name:"support.constant.tuple.bh"},{captures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"punctuation.bracket.bh"},3:{name:"punctuation.bracket.bh"}},match:"(')?(\\[)\\s*(\\])",name:"support.constant.empty-list.bh"},{include:"#integer_literals"},{match:"(::|\u2237)(?![\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']])",name:"keyword.operator.double-colon.bh"},{include:"#forall"},{match:"=>|\u21D2",name:"keyword.operator.big-arrow.bh"},{include:"#string_literal"},{match:"'[^']'",name:"invalid"},{include:"#type_application"},{include:"#reserved_symbol"},{include:"#type_operator"},{include:"#type_constructor"},{begin:"(\\()",beginCaptures:{1:{name:"punctuation.paren.bh"}},end:"(\\))",endCaptures:{2:{name:"punctuation.paren.bh"}},patterns:[{include:"#comma"},{include:"#type_signature"}]},{begin:"(')?(\\()",beginCaptures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"punctuation.paren.bh"}},end:"(\\))",endCaptures:{1:{name:"punctuation.paren.bh"}},patterns:[{include:"#comma"},{include:"#type_signature"}]},{begin:"(')?(\\[)",beginCaptures:{1:{name:"keyword.operator.promotion.bh"},2:{name:"punctuation.bracket.bh"}},end:"(\\])",endCaptures:{1:{name:"punctuation.bracket.bh"}},patterns:[{include:"#comma"},{include:"#type_signature"}]},{include:"#type_variable"}]},type_variable:{match:"\\b(?<!')(?!(?:forall|deriving)\\b(?!'))[\\p{Ll}_][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*",name:"variable.other.generic-type.bh"},where:{patterns:[{begin:`(?x)
+  (?<!')\\b(where)
+  \\s*(\\{)(?!-)`,beginCaptures:{1:{name:"keyword.other.where.bh"},2:{name:"punctuation.brace.bh"}},end:"(\\})",endCaptures:{1:{name:"punctuation.brace.bh"}},patterns:[{include:"$self"},{match:";",name:"punctuation.semicolon.bh"}]},{match:"\\b(?<!')(where)\\b(?!')",name:"keyword.other.where.bh"}]}},scopeName:"source.bh"},n=e;export{n as default};
