@@ -83,3 +83,19 @@ jobs:
         printf '# Title\n\n| a |\n|---|\n| 1 |\n' > smoke.md
         ./src/aot/Markdowned.Cli --version
         ./src/aot/Markdowned.Cli smoke.md | grep -q '<h1'
+
+  assets:
+    name: Vendored web assets are up to date
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-node@v5
+      with:
+        node-version: 22
+    - name: Rebuild assets
+      working-directory: ./assets
+      run: |
+        npm ci
+        npm run build
+    - name: Check that the committed assets match
+      run: git diff --exit-code --stat -- src/Markdowned/Assets

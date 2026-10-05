@@ -1,0 +1,104 @@
+using Markdig.Renderers;
+using Markdig.Renderers.Html;
+using Markdig.Syntax.Inlines;
+
+namespace Markdowned.Markdown.Renderers;
+
+public sealed class GitHubLinkRenderer : HtmlObjectRenderer<LinkInline>
+{
+    private static bool IsExternal(string url)
+    {
+        return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool InsideLink(LinkInline link)
+    {
+        for (
+            ContainerInline? parent = link.Parent;
+            parent is not null;
+            parent = parent.Parent
+        )
+        {
+            if (parent is LinkInline { IsImage: false })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected override void Write(HtmlRenderer renderer, LinkInline obj)
+    {
+        string url = obj.Url ?? string.Empty;
+
+        if (obj.IsImage)
+        {
+            WriteImage(renderer, obj);
+
+            return;
+        }
+
+        if (!HtmlSanitizer.IsSafe(url, "http", "https", "mailto"))
+        {
+            renderer.WriteChildren(obj);
+
+            return;
+        }
+
+        _ = renderer.Write("<a href=\"").WriteEscapeUrl(url).Write('"');
+
+        if (!string.IsNullOrEmpty(obj.Title))
+        {
+            _ = renderer.Write(" title=\"").WriteEscape(obj.Title).Write('"');
+        }
+
+        if (IsExternal(url))
+        {
+            _ = renderer.Write(" rel=\"nofollow\"");
+        }
+
+        _ = renderer.Write('>');
+        renderer.WriteChildren(obj);
+        _ = renderer.Write("</a>");
+    }
+
+    private static void WriteImage(HtmlRenderer renderer, LinkInline obj)
+    {
+        string url = HtmlSanitizer.IsSafe(obj.Url ?? string.Empty, "http", "https")
+            ? obj.Url ?? string.Empty
+            : string.Empty;
+        bool wrap = IsExternal(url) && !InsideLink(obj);
+
+        if (wrap)
+        {
+            _ = renderer.Write(
+                "<a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\""
+            );
+            _ = renderer.WriteEscapeUrl(url).Write("\">");
+        }
+
+        _ = renderer.Write("<img");
+
+        if (url.Length > 0)
+        {
+            _ = renderer.Write(" src=\"").WriteEscapeUrl(url).Write('"');
+        }
+
+        _ = renderer.Write(" alt=\"");
+        _ = renderer.WriteEscape(new InlineText(obj).TextValue).Write('"');
+
+        if (!string.IsNullOrEmpty(obj.Title))
+        {
+            _ = renderer.Write(" title=\"").WriteEscape(obj.Title).Write('"');
+        }
+
+        _ = renderer.Write(" style=\"max-width: 100%;\">");
+
+        if (wrap)
+        {
+            _ = renderer.Write("</a>");
+        }
+    }
+}

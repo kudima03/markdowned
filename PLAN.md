@@ -19,8 +19,8 @@ GitHub's **inputs** rather than its rendering engine:
 
 - **Same HTML.** Our Markdown → HTML step emits the markup GitHub emits: heading wrappers and
   anchors, task-list classes, alert blocks, footnote section, `pl-*` highlight spans, and so on.
-  It is checked against the HTML that GitHub's Markdown API (`POST /markdown`, `mode: gfm`)
-  returns for the same fixtures.
+  It is checked against the HTML that GitHub renders for the same fixtures (see the fidelity
+  harness: the repository contents endpoint, not `POST /markdown`).
 - **Same CSS.** `github-markdown-css` (light theme), embedded.
 - **Same client-side renderers.** These are the libraries GitHub runs: MathJax for math,
   mermaid for diagrams (default theme), and **starry-night**, GitHub's own highlighter, which
@@ -147,9 +147,11 @@ change the exit code.
 
 ## Fidelity harness
 
-1. Each fixture under `src/Tests/Markdowned.Tests/Fidelity/*.md` is sent once to GitHub's
-   Markdown API, which returns **the exact HTML that GitHub renders** for it. A dev script
-   records that HTML and the result is committed.
+1. Each fixture under `src/Tests/Markdowned.Tests/Fidelity/*.md` is pushed, then fetched once
+   from the repository contents endpoint with `Accept: application/vnd.github.html+json`, which
+   returns **the exact HTML that GitHub shows on a file page** (`scripts/record-fixtures.sh`).
+   `POST /markdown` is not used: it omits what the page adds (`markdown-heading` wrappers,
+   anchors, `snippet-clipboard-content`). The recorded HTML is committed.
 2. **Unit tests** compare our HTML with the recorded HTML after normalising it: attribute order,
    whitespace, and the highlight spans GitHub adds on the server.
 3. **Integration tests** run both HTML documents through our page in Chromium and compare the
@@ -224,8 +226,7 @@ each one.
 
 ## Open questions
 
-1. **GitHub's README width.** It needs measuring once on github.com: is the README body
-   about 830 px or about 880 px wide at the reference viewport? It goes into the template, with
-   a `--width` override if useful.
-2. **MathJax output mode.** GitHub's exact MathJax output mode needs checking, CHTML or SVG,
-   so ours matches.
+1. ~~**GitHub's README width.**~~ Measured on github.com (2026-10-05, headless Chromium, desktop
+   viewports of 1440 px and wider): the README `article` is **838 px** wide (823 px at 1280 px).
+   The template uses 838 px; there is no `--width` override yet.
+2. **MathJax output mode.** Not verifiable from outside; SVG was chosen (no web fonts to embed).

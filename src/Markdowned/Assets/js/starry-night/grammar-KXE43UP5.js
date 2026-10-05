@@ -1,0 +1,1 @@
+import"./grammar-MHCU5XT2.js";var e={dependencies:["source.turtle"],extensions:[".sparql",".rq"],names:["sparql"],patterns:[{include:"source.turtle#sparqlKeywords"},{include:"source.turtle#sparqlFilterFns"},{include:"source.turtle#sparqlLangConsts"},{include:"source.turtle"}],scopeName:"source.sparql"},r=e;export{r as default};

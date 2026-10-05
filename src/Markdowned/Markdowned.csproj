@@ -14,6 +14,14 @@
     <PackageReference Include="Pure.Primitives" Version="3.6.5" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Browser\browser.json" />
+    <EmbeddedResource
+      Include="Assets\**\*"
+      Exclude="Assets\**\*.md;Assets\**\*.txt;Assets\**\*.LICENSE"
+      LogicalName="assets/%(RecursiveDir)%(Filename)%(Extension)"
+    />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Markdowned.Abstractions\Markdowned.Abstractions.csproj" />
   </ItemGroup>
 </Project>

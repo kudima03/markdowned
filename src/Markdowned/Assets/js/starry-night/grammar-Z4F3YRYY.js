@@ -1,0 +1,1 @@
+import"./grammar-MHCU5XT2.js";var e={dependencies:["source.python"],extensions:[],names:["python-console","pycon"],patterns:[{captures:{1:{name:"punctuation.separator.prompt.python.console"},2:{patterns:[{include:"source.python"}]}},match:"^(>{3}|\\.{3}|In \\[\\d+\\]:) (.+)$"}],scopeName:"text.python.console"},n=e;export{n as default};
