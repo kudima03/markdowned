@@ -24,6 +24,17 @@ public sealed class GitHubCodeBlockRenderer : HtmlObjectRenderer<CodeBlock>
 
         _ = renderer.EnsureLine();
 
+        if (
+            info.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
+            == "math"
+        )
+        {
+            GitHubMathRenderer.Write(renderer, trimmed, true);
+            _ = renderer.WriteLine();
+
+            return;
+        }
+
         if (scope.Length > 0)
         {
             // starry-night adds the highlighting spans in the page, from the scope.

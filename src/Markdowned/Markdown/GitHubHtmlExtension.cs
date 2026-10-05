@@ -18,6 +18,7 @@ public sealed class GitHubHtmlExtension : IMarkdownExtension
         if (!pipeline.InlineParsers.Contains<EmailAutolinkParser>())
         {
             pipeline.InlineParsers.Insert(0, new EmailAutolinkParser());
+            pipeline.InlineParsers.Insert(0, new MathInlineParser());
         }
     }
 
@@ -28,6 +29,7 @@ public sealed class GitHubHtmlExtension : IMarkdownExtension
             return;
         }
 
+        html.ObjectRenderers.AddIfNotAlready(new GitHubMathRenderer());
         FootnoteReferences references = new FootnoteReferences();
         HeadingSlugs slugs = new HeadingSlugs();
         HtmlSanitizer sanitizer = new HtmlSanitizer(slugs);
