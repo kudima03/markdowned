@@ -26,6 +26,25 @@ public sealed class GitHubCodeBlockRenderer : HtmlObjectRenderer<CodeBlock>
 
         if (
             info.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
+            == "mermaid"
+        )
+        {
+            // GitHub renders diagrams in an iframe; the page renders them in place from this source.
+            _ = renderer.Write(
+                "<section class=\"js-render-needs-enrichment render-needs-enrichment position-relative\" "
+                    + "data-type=\"mermaid\" aria-label=\"mermaid rendered output container\">"
+                    + "<div class=\"js-render-enrichment-target\" dir=\"auto\">"
+                    + "<div class=\"render-plaintext-hidden\" dir=\"auto\">"
+                    + "<pre lang=\"mermaid\" aria-label=\"Raw mermaid code\">"
+            );
+            _ = renderer.WriteEscape(code.ToString());
+            _ = renderer.WriteLine("</pre></div></div></section>");
+
+            return;
+        }
+
+        if (
+            info.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
             == "math"
         )
         {

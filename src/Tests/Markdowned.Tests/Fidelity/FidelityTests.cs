@@ -18,7 +18,8 @@ public sealed record FidelityTests
         string
     >
     {
-        ["blocks"] = "dir=\"auto\" on sanitised raw HTML blocks",
+        ["mermaid"] =
+            "GitHub's server markup carries an iframe loader and random identities",
     };
 
     [Theory]

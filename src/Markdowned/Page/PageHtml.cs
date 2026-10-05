@@ -27,6 +27,21 @@ public sealed record PageHtml : IHtml
         + "catch (error) { console.error(error); } }"
         + "document.head.appendChild(MathJax.svgStylesheet()); })());</script>";
 
+    private const string Mermaid =
+        "<script src=\"/assets/js/mermaid.js\"></script>"
+        + "<script>window.markdownedTasks.push((async () => {"
+        + "await new Promise(done => document.readyState === 'loading' "
+        + "? document.addEventListener('DOMContentLoaded', done) : done());"
+        + "mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'strict', "
+        + "fontFamily: '\"Noto Sans\", sans-serif' });"
+        + "let count = 0;"
+        + "for (const section of document.querySelectorAll('section[data-type=\"mermaid\"]')) {"
+        + "const source = section.querySelector('pre').textContent;"
+        + "try { const { svg } = await mermaid.render('markdowned-mermaid-' + (count++), source);"
+        + "section.innerHTML = svg; }"
+        + "catch (error) { console.error(error); section.classList.add('markdowned-mermaid-error'); } } "
+        + "document.querySelectorAll('[id^=\"dmarkdowned-mermaid\"]').forEach(node => node.remove()); })());</script>";
+
     private readonly IHtml _body;
 
     public PageHtml(IHtml body)
@@ -53,6 +68,11 @@ public sealed record PageHtml : IHtml
         + (
             _body.TextValue.Contains("<math-renderer", StringComparison.Ordinal)
                 ? Math
+                : string.Empty
+        )
+        + (
+            _body.TextValue.Contains("data-type=\"mermaid\"", StringComparison.Ordinal)
+                ? Mermaid
                 : string.Empty
         )
         + "</head><body><article class=\"markdown-body entry-content\">"

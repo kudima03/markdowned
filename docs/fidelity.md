@@ -34,3 +34,7 @@ URLs are mapped back to their canonical URL and random id suffixes are dropped.
 - **Math:** the server markup (`math-renderer`) matches GitHub's, and MathJax typesets it in the
   page. GitHub's client loader is not public; we use MathJax 3 with SVG output (no web fonts), so
   glyph shapes and spacing may differ slightly. `\$x\$` is text here but math on GitHub.
+- **Mermaid:** GitHub renders diagrams in an iframe from `viewscreen.githubusercontent.com`; we
+  render them in the page with the embedded mermaid (default theme, `strict` security level,
+  Noto Sans). The server markup differs (no loader or identities), so the fixture is recorded but
+  not compared. A diagram that fails to render stays as its source.
