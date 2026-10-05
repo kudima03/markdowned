@@ -13,7 +13,7 @@ public sealed record HtmlDocumentTests
         IHtml html = new HtmlDocument(new MarkdownHtml(new String("text")));
 
         Assert.StartsWith("<!doctype html>", html.TextValue);
-        Assert.Contains("<p>text</p>", html.TextValue);
+        Assert.Contains("<p dir=\"auto\">text</p>", html.TextValue);
         Assert.Equal(html.TextValue.Length, html.Count());
     }
 }

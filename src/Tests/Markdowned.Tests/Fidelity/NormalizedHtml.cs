@@ -81,6 +81,9 @@ public sealed partial record NormalizedHtml : IString
     [GeneratedRegex("-[0-9a-f]{32}\\b")]
     private static partial Regex Hash();
 
+    [GeneratedRegex("^https://camo\\.githubusercontent\\.com/[0-9a-f]{64}/([0-9a-f]+)$")]
+    private static partial Regex Camo();
+
     [GeneratedRegex("\\s+")]
     private static partial Regex Whitespace();
 
@@ -154,20 +157,22 @@ public sealed partial record NormalizedHtml : IString
         return Hash().Replace(value, string.Empty);
     }
 
+    private static string Decamo(string value)
+    {
+        Match camo = Camo().Match(value);
+
+        return camo.Success
+            ? Encoding.UTF8.GetString(System.Convert.FromHexString(camo.Groups[1].Value))
+            : value;
+    }
+
     private static string Attributes(IElement element)
     {
-        string? canonical = element.GetAttribute("data-canonical-src");
-
         return string.Concat(
             element
                 .Attributes.Where(attribute => attribute.Name != "data-canonical-src")
                 .Select(attribute =>
-                    (
-                        attribute.Name,
-                        Value: attribute.Name == "src" && canonical is not null
-                            ? canonical
-                            : Dehash(attribute.Value)
-                    )
+                    (attribute.Name, Value: Dehash(Decamo(attribute.Value)))
                 )
                 .OrderBy(attribute => attribute.Name, StringComparer.Ordinal)
                 .Select(attribute => $" {attribute.Name}=\"{attribute.Value}\"")

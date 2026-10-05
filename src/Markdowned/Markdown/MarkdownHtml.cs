@@ -1,4 +1,5 @@
 using Markdig;
+using Markdig.Extensions.EmphasisExtras;
 using Markdowned.Abstractions.Markdown;
 using Pure.Primitives.Abstractions.Char;
 using Pure.Primitives.Abstractions.String;
@@ -16,7 +17,13 @@ public sealed record MarkdownHtml : IHtml
     }
 
     private static MarkdownPipeline Pipeline =>
-        new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+        new MarkdownPipelineBuilder()
+            .UsePipeTables()
+            .UseTaskLists()
+            .UseEmphasisExtras(EmphasisExtraOptions.Strikethrough)
+            .UseAutoLinks()
+            .Use<GitHubHtmlExtension>()
+            .Build();
 
     public string TextValue => Markdig.Markdown.ToHtml(_markdown.TextValue, Pipeline);
 

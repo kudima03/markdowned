@@ -85,10 +85,15 @@ public sealed record FixtureTests
     public void RestoresCanonicalImageSource()
     {
         string text = Normalized(
-            "<img src=\"https://camo.githubusercontent.com/x\" data-canonical-src=\"https://a.b/c.png\">"
+            "<a href=\"https://camo.githubusercontent.com/"
+                + new string('a', 64)
+                + "/68747470733a2f2f612e622f632e706e67\"><img src=\"https://camo.githubusercontent.com/"
+                + new string('a', 64)
+                + "/68747470733a2f2f612e622f632e706e67\" data-canonical-src=\"https://a.b/c.png\"></a>"
         ).TextValue;
 
         Assert.Contains("src=\"https://a.b/c.png\"", text);
+        Assert.Contains("href=\"https://a.b/c.png\"", text);
         Assert.DoesNotContain("camo", text);
     }
 
