@@ -1,6 +1,6 @@
+using Markdowned.Abstractions.Browser;
 using Markdowned.Abstractions.Output;
 using Markdowned.Abstractions.Printing;
-using Markdowned.Browser;
 using Markdowned.Markdown;
 using Markdowned.Page;
 using Markdowned.Printing;
@@ -15,9 +15,9 @@ public sealed record PdfFile : IOutput
 
     private readonly IString _output;
 
-    private readonly IString _browser;
+    private readonly IBrowserLaunch _browser;
 
-    public PdfFile(IString input, IString output, IString browser)
+    public PdfFile(IString input, IString output, IBrowserLaunch browser)
     {
         _input = input;
         _output = output;
@@ -37,11 +37,7 @@ public sealed record PdfFile : IOutput
 
     private IPdf Pdf =>
         new PdfOfHtml(
-            new ChromiumLaunch(
-                _browser.TextValue.Length > 0
-                    ? _browser
-                    : throw new ArgumentException("--browser <path> is required.")
-            ),
+            _browser,
             new HtmlDocument(new MarkdownHtml(new String(Markdown))),
             new PrintParameters()
         );

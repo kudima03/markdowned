@@ -18,10 +18,14 @@ internal static class Program
             cancellation.Cancel();
         };
 
+        using HttpClient client = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
+
         try
         {
             await foreach (
-                IString line in new Command(args).WithCancellation(cancellation.Token)
+                IString line in new Command(client, args).WithCancellation(
+                    cancellation.Token
+                )
             )
             {
                 Console.WriteLine(line.TextValue);

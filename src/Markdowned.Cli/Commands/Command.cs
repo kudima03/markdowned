@@ -1,4 +1,6 @@
+using Markdowned.Abstractions.Browser;
 using Markdowned.Abstractions.Output;
+using Markdowned.Browser;
 using Markdowned.Cli.Arguments;
 using Markdowned.Output;
 using Pure.Primitives.Abstractions.String;
@@ -8,10 +10,13 @@ namespace Markdowned.Cli.Commands;
 
 public sealed record Command : IOutput
 {
+    private readonly HttpClient _client;
+
     private readonly IEnumerable<string> _arguments;
 
-    public Command(params IEnumerable<string> arguments)
+    public Command(HttpClient client, params IEnumerable<string> arguments)
     {
+        _client = client;
         _arguments = arguments;
     }
 
@@ -34,11 +39,33 @@ public sealed record Command : IOutput
         }
     }
 
+    private IBrowserInstall Install =>
+        new InstalledBrowser(
+            new CacheDirectory(),
+            new PinnedDownload(new ChromePlatform()),
+            _client,
+            Has("--offline"),
+            Has("--quiet") ? TextWriter.Null : Console.Error
+        );
+
+    private IBrowserLaunch Launch
+    {
+        get
+        {
+            IString explicitPath = new OptionValue(["--browser"], _arguments);
+
+            return explicitPath.TextValue.Length > 0
+                ? new ChromiumLaunch(explicitPath)
+                : new InstalledBrowserLaunch(Install);
+        }
+    }
+
     private IOutput Chosen =>
         Has("--version") ? new TextOutput(new String(Version.Text))
         : Has("--help") || Input.TextValue.Length == 0
             ? new TextOutput(new String(Help.Text))
-        : new PdfFile(Input, Output, new OptionValue(["--browser"], _arguments));
+        : Input.TextValue == "install-browser" ? new InstallBrowser(Install)
+        : new PdfFile(Input, Output, Launch);
 
     public IAsyncEnumerator<IString> GetAsyncEnumerator(
         CancellationToken cancellationToken = default

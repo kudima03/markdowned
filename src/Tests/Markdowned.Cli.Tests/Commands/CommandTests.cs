@@ -13,7 +13,7 @@ public sealed record CommandTests
     {
         List<string> lines = [];
 
-        await foreach (IString line in new Command(arguments))
+        await foreach (IString line in new Command(new HttpClient(), arguments))
         {
             lines.Add(line.TextValue);
         }
@@ -40,13 +40,61 @@ public sealed record CommandTests
     }
 
     [Fact]
-    public async Task RequiresBrowser()
+    public async Task RefusesToDownloadBrowserOffline()
     {
-        ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() =>
-            Lines("in.md")
-        );
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
 
-        Assert.Contains("--browser", error.Message);
+        using TempDirectory cache = new TempDirectory();
+        string? previous = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
+        Environment.SetEnvironmentVariable("XDG_CACHE_HOME", cache.Path);
+
+        try
+        {
+            string input = Path.Combine(cache.Path, "in.md");
+            await File.WriteAllTextAsync(input, "# T");
+
+            BrowserException error = await Assert.ThrowsAsync<BrowserException>(() =>
+                Lines(input, "--offline")
+            );
+
+            Assert.Contains("--offline", error.Message);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("XDG_CACHE_HOME", previous);
+        }
+    }
+
+    [Fact]
+    public async Task PrintsPathOfInstalledBrowser()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        using TempDirectory cache = new TempDirectory();
+        string? previous = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
+        Environment.SetEnvironmentVariable("XDG_CACHE_HOME", cache.Path);
+
+        try
+        {
+            string executable = new CachedBrowser(
+                new CacheDirectory(),
+                new PinnedDownload(new ChromePlatform())
+            ).TextValue;
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(executable)!);
+            await File.WriteAllTextAsync(executable, string.Empty);
+
+            Assert.Equal(executable, Assert.Single(await Lines("install-browser")));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("XDG_CACHE_HOME", previous);
+        }
     }
 
     [Fact]
