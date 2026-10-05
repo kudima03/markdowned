@@ -90,12 +90,42 @@ public sealed record Command : IOutput
         }
     }
 
+    private double Timeout
+    {
+        get
+        {
+            string requested = new OptionValue(["--timeout"], _arguments).TextValue;
+
+            return requested.Length == 0 ? 60
+                : double.TryParse(
+                    requested,
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out double seconds
+                )
+                    ? seconds
+                : throw new ArgumentException(
+                    $"--timeout expects a number, got '{requested}'."
+                );
+        }
+    }
+
     private IOutput Chosen =>
         Has("--version") ? new TextOutput(new String(Version.Text))
         : Has("--help") || Input.TextValue.Length == 0
             ? new TextOutput(new String(Help.Text))
         : Input.TextValue == "install-browser" ? new InstallBrowser(Install)
-        : new PdfFile(Input, Output, Launch, Paper, Has("--landscape"), Margin);
+        : new PdfFile(
+            Input,
+            Output,
+            Launch,
+            Paper,
+            Has("--landscape"),
+            Margin,
+            Has("--offline"),
+            Timeout,
+            Has("--quiet") ? TextWriter.Null : Console.Error
+        );
 
     public IAsyncEnumerator<IString> GetAsyncEnumerator(
         CancellationToken cancellationToken = default

@@ -12,6 +12,8 @@ public sealed record RunningBrowser : IBrowser
 
     private readonly string _url;
 
+    private readonly int[] _disposed = new int[1];
+
     internal RunningBrowser(Process process, string profile, string url)
     {
         _process = process;
@@ -23,6 +25,11 @@ public sealed record RunningBrowser : IBrowser
 
     public async ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref _disposed[0], 1) == 1)
+        {
+            return;
+        }
+
         try
         {
             if (!_process.HasExited)

@@ -1,4 +1,5 @@
 using Markdowned.Browser;
+using Markdowned.DevTools;
 using Markdowned.Tests.Fakes;
 using Pure.Primitives.Abstractions.String;
 using CliVersion = Markdowned.Cli.Commands.Version;
@@ -213,6 +214,51 @@ public sealed record CommandTests
         Assert.Contains("\"paperWidth\":8.5", printing);
         Assert.Contains("\"landscape\":true", printing);
         Assert.Contains($"\"marginTop\":{10.5 / 25.4}".Replace(',', '.'), printing);
+    }
+
+    [Fact]
+    public async Task TimesOutWhenRenderingHangs()
+    {
+        await using FakeDevToolsServer server = new FakeDevToolsServer(
+            hangMethod: "Page.printToPDF"
+        );
+        using FakeBrowser fake = FakeBrowser.Listening(server.Url);
+        using TempDirectory directory = new TempDirectory();
+        string input = Path.Combine(directory.Path, "doc.md");
+        await File.WriteAllTextAsync(input, "# Title");
+
+        DevToolsException error = await Assert.ThrowsAsync<DevToolsException>(() =>
+            Lines(input, "--browser", fake.Executable, "--timeout", "0.5")
+        );
+
+        Assert.Contains("timed out after 0.5 seconds", error.Message);
+        Assert.False(File.Exists(Path.Combine(directory.Path, "doc.pdf")));
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-3")]
+    public async Task RejectsNonPositiveTimeout(string seconds)
+    {
+        using TempDirectory directory = new TempDirectory();
+        string input = Path.Combine(directory.Path, "doc.md");
+        await File.WriteAllTextAsync(input, "# Title");
+
+        ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() =>
+            Lines(input, "--browser", "x", "--timeout", seconds)
+        );
+
+        Assert.Contains("--timeout", error.Message);
+    }
+
+    [Fact]
+    public async Task RejectsTimeoutThatIsNotANumber()
+    {
+        ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() =>
+            Lines("in.md", "--browser", "x", "--timeout", "soon")
+        );
+
+        Assert.Contains("--timeout expects a number", error.Message);
     }
 
     [Fact]

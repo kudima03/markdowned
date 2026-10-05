@@ -43,6 +43,10 @@ internal static class Program
             await Console.Error.WriteLineAsync(error.Message);
             return 2;
         }
+        catch (DevToolsException) when (cancellation.IsCancellationRequested)
+        {
+            return 130;
+        }
         catch (DevToolsException error)
         {
             await Console.Error.WriteLineAsync(error.Message);

@@ -18,29 +18,86 @@ public sealed record PdfOfHtml : IPdf
 
     private readonly IPageResources _assets;
 
+    private readonly IResourceLookup _local;
+
+    private readonly bool _remoteImages;
+
+    private readonly TextWriter _warnings;
+
     private readonly IString _parameters;
 
     public PdfOfHtml(
         IBrowserLaunch launch,
         IHtml html,
         IPageResources assets,
+        IResourceLookup local,
+        bool remoteImages,
+        TextWriter warnings,
         IString parameters
     )
     {
         _launch = launch;
         _html = html;
         _assets = assets;
+        _local = local;
+        _remoteImages = remoteImages;
+        _warnings = warnings;
         _parameters = parameters;
+    }
+
+    private const string BrokenImages =
+        "window.markdownedReady.then(() => JSON.stringify([...document.images]"
+        + ".filter(image => image.getAttribute('src') && (!image.complete || "
+        + "(image.naturalWidth === 0 && !/\\.svg([?#]|$)/i.test(image.src))))"
+        + ".map(image => image.src)))";
+
+    private async Task Warn(JsonElement ready)
+    {
+        if (
+            !ready.TryGetProperty("result", out JsonElement result)
+            || !result.TryGetProperty("value", out JsonElement value)
+            || value.GetString() is not { } json
+        )
+        {
+            return;
+        }
+
+        using JsonDocument urls = JsonDocument.Parse(json);
+
+        foreach (JsonElement url in urls.RootElement.EnumerateArray())
+        {
+            string shown = url.GetString()!
+                .Replace(
+                    $"{FetchServing.Origin}/",
+                    string.Empty,
+                    StringComparison.Ordinal
+                );
+
+            await _warnings.WriteLineAsync(
+                _remoteImages || shown != url.GetString()
+                    ? $"warning: image not loaded: {shown}"
+                    : $"warning: image not loaded (--offline): {shown}"
+            );
+        }
     }
 
     public async IAsyncEnumerator<byte[]> GetAsyncEnumerator(
         CancellationToken cancellationToken = default
     )
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         await using IBrowser browser = await _launch.Browser;
+        await using CancellationTokenRegistration kill = cancellationToken.Register(() =>
+            _ = browser.DisposeAsync().AsTask()
+        );
         await using IDevToolsSession session = await new DevToolsConnect(
             browser.WebSocketUrl
         ).Session;
+
+        await using CancellationTokenRegistration close = cancellationToken.Register(() =>
+            _ = session.DisposeAsync().AsTask()
+        );
 
         string targetId = (
             await session.Send(
@@ -94,7 +151,16 @@ public sealed record PdfOfHtml : IPdf
         Task serving = new FetchServing(
             session,
             sessionId,
-            new CombinedResources(_assets, new SingleResource(new HtmlResource(_html))),
+            new FirstFound(
+                new ListedResources(
+                    new CombinedResources(
+                        _assets,
+                        new SingleResource(new HtmlResource(_html))
+                    )
+                ),
+                _local
+            ),
+            _remoteImages,
             loaded
         ).Served;
 
@@ -123,19 +189,19 @@ public sealed record PdfOfHtml : IPdf
 
         await ready;
 
-        _ = await session.Send(
+        JsonElement evaluated = await session.Send(
             new PageCommand(
                 sessionId,
                 "Runtime.evaluate",
                 new JsonObject(
-                    new KeyValuePair<string, object>(
-                        "expression",
-                        "window.markdownedReady"
-                    ),
-                    new KeyValuePair<string, object>("awaitPromise", true)
+                    new KeyValuePair<string, object>("expression", BrokenImages),
+                    new KeyValuePair<string, object>("awaitPromise", true),
+                    new KeyValuePair<string, object>("returnByValue", true)
                 )
             )
         );
+
+        await Warn(evaluated);
 
         string handle = (
             await session.Send(new PageCommand(sessionId, "Page.printToPDF", _parameters))

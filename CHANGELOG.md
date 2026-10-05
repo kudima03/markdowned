@@ -17,4 +17,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `markdowned install-browser`, `--offline`, `--quiet`.
 * Alerts, footnotes, YAML front matter tables and emoji shortcodes, rendered with GitHub's markup.
 * Raw HTML is sanitised like GitHub does it (tag filter, allow-list, safe URLs, `dir="auto"`, image links); unsafe Markdown link and image URLs are dropped.
+* Local and remote images, `--offline`, `--timeout`; broken images are reported as warnings.
 * Exit codes: 0 success, 1 arguments or I/O, 2 browser, 3 render.

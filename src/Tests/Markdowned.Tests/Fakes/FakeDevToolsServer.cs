@@ -16,8 +16,15 @@ public sealed class FakeDevToolsServer : IAsyncDisposable
 
     private readonly bool _neverLoads;
 
-    public FakeDevToolsServer(string failMethod = "", bool neverLoads = false)
+    private readonly string _hangMethod;
+
+    public FakeDevToolsServer(
+        string failMethod = "",
+        bool neverLoads = false,
+        string hangMethod = ""
+    )
     {
+        _hangMethod = hangMethod;
         _failMethod = failMethod;
         _neverLoads = neverLoads;
         int port = FreePort();
@@ -110,10 +117,15 @@ public sealed class FakeDevToolsServer : IAsyncDisposable
                 break;
             }
 
+            if (method == _hangMethod)
+            {
+                continue;
+            }
+
             string reply =
                 method == _failMethod
                     ? $$$"""{"id":{{{id}}},"error":{"message":"boom"}}"""
-                    : $$$"""{"id":{{{id}}},"result":{{{Result(method)}}}}""";
+                    : $$$"""{"id":{{{id}}},"result":{{{Result(method, message)}}}}""";
 
             await Push(socket, reply);
 
@@ -152,7 +164,10 @@ public sealed class FakeDevToolsServer : IAsyncDisposable
     {
         yield return Request("R0", "https://markdowned.local/index.html", "OTHER");
         yield return Request("R1", "https://markdowned.local/index.html", "S1");
-        yield return Request("R2", "https://example.com/tracker.png", "S1");
+        yield return Request("R2", "https://example.com/tracker.js", "S1", "Script");
+        yield return Request("R4", "https://example.com/photo.png", "S1", "Image");
+        yield return Request("R5", "https://markdowned.local/missing.png", "S1", "Image");
+        yield return Request("R6", "https://markdowned.local/img/a.png", "S1", "Image");
         yield return Request(
             "R3",
             "https://markdowned.local/assets/page.css?v=1#x",
@@ -162,15 +177,22 @@ public sealed class FakeDevToolsServer : IAsyncDisposable
         """{"method":"Page.loadEventFired","sessionId":"S1","params":{}}""";
     }
 
-    private static string Request(string id, string url, string session)
+    private static string Request(
+        string id,
+        string url,
+        string session,
+        string type = "Other"
+    )
     {
-        return $$$$"""{"method":"Fetch.requestPaused","sessionId":"{{{{session}}}}","params":{"requestId":"{{{{id}}}}","request":{"url":"{{{{url}}}}"}}}""";
+        return $$$$"""{"method":"Fetch.requestPaused","sessionId":"{{{{session}}}}","params":{"requestId":"{{{{id}}}}","resourceType":"{{{{type}}}}","request":{"url":"{{{{url}}}}"}}}""";
     }
 
-    private static string Result(string method)
+    private static string Result(string method, string message)
     {
         return method switch
         {
+            "Runtime.evaluate" when message.Contains("document.images") =>
+                $$$"""{"result":{"type":"string","value":{{{JsonSerializer.Serialize("[\"https://markdowned.local/missing.png\",\"https://example.com/photo.png\"]")}}}}}""",
             "Target.createTarget" => /*lang=json,strict*/
             """{"targetId":"T1"}""",
             "Target.attachToTarget" => /*lang=json,strict*/

@@ -42,9 +42,17 @@ markdowned install-browser
 | `--paper A4\|Letter\|Legal` | Paper size (default A4) |
 | `--landscape` | Landscape orientation |
 | `--margin <mm>` | Page margin in millimetres (default 15) |
-| `--offline` | Never download anything |
+| `--offline` | Never download anything: no browser download, no remote images |
+| `--timeout <seconds>` | Give up rendering after this long (default 60, counted once the browser runs) |
 | `--quiet` | No progress on stderr |
 | `--help`, `--version` | |
+
+## Images
+
+Local images are resolved relative to the Markdown file (or the working directory for stdin) and
+only image files below that directory are served. Remote images are fetched unless `--offline`
+is set. Images that cannot be loaded render as broken images, like on GitHub, and a warning goes
+to stderr. Nothing else is ever fetched: every other request from the page is blocked.
 
 ## Design
 

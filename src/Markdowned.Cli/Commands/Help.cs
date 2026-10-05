@@ -6,7 +6,7 @@ public static class Help
         markdowned - render Markdown to a PDF that looks like github.com
 
         Usage: markdowned <input.md | -> [-o|--output <file.pdf | ->]
-                          [--browser <path>] [--offline] [--quiet]
+                          [--browser <path>] [--offline] [--quiet] [--timeout <seconds>]
                           [--paper A4|Letter|Legal] [--landscape] [--margin <mm>]
                           [--help] [--version]
                markdowned install-browser

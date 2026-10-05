@@ -1,12 +1,14 @@
 using System.Text.Json;
 using Markdowned.Abstractions.DevTools;
 using Markdowned.Abstractions.Page;
+using String = Pure.Primitives.String.String;
 
 namespace Markdowned.DevTools;
 
 /// <summary>
-/// Answers every paused request (our own origin is served, everything else fails) and
-/// reports when the page has loaded.
+/// Answers every paused request and reports when the page has loaded. Our own origin is served
+/// from the resources, images from the network pass only when remote images are allowed, and
+/// everything else is blocked.
 /// </summary>
 public sealed record FetchServing
 {
@@ -16,24 +18,88 @@ public sealed record FetchServing
 
     private readonly string _sessionId;
 
-    private readonly IEnumerable<IPageResource> _resources;
+    private readonly IResourceLookup _resources;
+
+    private readonly bool _remoteImages;
 
     private readonly TaskCompletionSource<bool> _loaded;
 
     public FetchServing(
         IDevToolsSession session,
         string sessionId,
-        IEnumerable<IPageResource> resources,
+        IResourceLookup resources,
+        bool remoteImages,
         TaskCompletionSource<bool> loaded
     )
     {
         _session = session;
         _sessionId = sessionId;
         _resources = resources;
+        _remoteImages = remoteImages;
         _loaded = loaded;
     }
 
     public Task Served => Serve();
+
+    private IDevToolsCommand Answer(string requestId, string url, string type)
+    {
+        IPageResource? resource = url.StartsWith($"{Origin}/", StringComparison.Ordinal)
+            ? _resources[new String(url[(Origin.Length + 1)..].Split('?', '#')[0])]
+            : null;
+
+        if (resource is not null)
+        {
+            return Command(
+                "Fetch.fulfillRequest",
+                new KeyValuePair<string, object>("requestId", requestId),
+                new KeyValuePair<string, object>("responseCode", 200),
+                new KeyValuePair<string, object>(
+                    "responseHeaders",
+                    new JsonArray(
+                        new JsonObject(
+                            new KeyValuePair<string, object>("name", "Content-Type"),
+                            new KeyValuePair<string, object>(
+                                "value",
+                                resource.ContentType.TextValue
+                            )
+                        )
+                    )
+                ),
+                new KeyValuePair<string, object>(
+                    "body",
+                    Convert.ToBase64String(resource.Content)
+                )
+            );
+        }
+
+        bool remoteImage =
+            _remoteImages
+            && type == "Image"
+            && (
+                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                || url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            )
+            && !url.StartsWith($"{Origin}/", StringComparison.Ordinal);
+
+        return remoteImage
+            ? Command(
+                "Fetch.continueRequest",
+                new KeyValuePair<string, object>("requestId", requestId)
+            )
+            : Command(
+                "Fetch.failRequest",
+                new KeyValuePair<string, object>("requestId", requestId),
+                new KeyValuePair<string, object>("errorReason", "BlockedByClient")
+            );
+    }
+
+    private IDevToolsCommand Command(
+        string method,
+        params IEnumerable<KeyValuePair<string, object>> parameters
+    )
+    {
+        return new PageCommand(_sessionId, method, new JsonObject(parameters));
+    }
 
     private async Task Serve()
     {
@@ -47,63 +113,28 @@ public sealed record FetchServing
                 continue;
             }
 
-            if (message.GetProperty("method").GetString() == "Page.loadEventFired")
+            string method = message.GetProperty("method").GetString()!;
+
+            if (method == "Page.loadEventFired")
             {
                 _ = _loaded.TrySetResult(true);
             }
 
-            if (message.GetProperty("method").GetString() != "Fetch.requestPaused")
+            if (method != "Fetch.requestPaused")
             {
                 continue;
             }
 
             JsonElement paused = message.GetProperty("params");
-            string requestId = paused.GetProperty("requestId").GetString()!;
-            string url = paused.GetProperty("request").GetProperty("url").GetString()!;
-            IPageResource? resource = _resources.FirstOrDefault(candidate =>
-                $"{Origin}/{candidate.Path.TextValue}" == url.Split('?', '#')[0]
-            );
 
             _ = await _session.Send(
-                resource is null
-                    ? new PageCommand(
-                        _sessionId,
-                        "Fetch.failRequest",
-                        new JsonObject(
-                            new KeyValuePair<string, object>("requestId", requestId),
-                            new KeyValuePair<string, object>(
-                                "errorReason",
-                                "BlockedByClient"
-                            )
-                        )
-                    )
-                    : new PageCommand(
-                        _sessionId,
-                        "Fetch.fulfillRequest",
-                        new JsonObject(
-                            new KeyValuePair<string, object>("requestId", requestId),
-                            new KeyValuePair<string, object>("responseCode", 200),
-                            new KeyValuePair<string, object>(
-                                "responseHeaders",
-                                new JsonArray(
-                                    new JsonObject(
-                                        new KeyValuePair<string, object>(
-                                            "name",
-                                            "Content-Type"
-                                        ),
-                                        new KeyValuePair<string, object>(
-                                            "value",
-                                            resource.ContentType.TextValue
-                                        )
-                                    )
-                                )
-                            ),
-                            new KeyValuePair<string, object>(
-                                "body",
-                                Convert.ToBase64String(resource.Content)
-                            )
-                        )
-                    )
+                Answer(
+                    paused.GetProperty("requestId").GetString()!,
+                    paused.GetProperty("request").GetProperty("url").GetString()!,
+                    paused.TryGetProperty("resourceType", out JsonElement type)
+                        ? type.GetString() ?? string.Empty
+                        : string.Empty
+                )
             );
         }
     }
