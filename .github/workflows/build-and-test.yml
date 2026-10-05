@@ -99,3 +99,30 @@ jobs:
         npm run build
     - name: Check that the committed assets match
       run: git diff --exit-code --stat -- src/Markdowned/Assets
+
+  integration:
+    name: Chromium integration tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.x.x
+    - name: Cache the pinned headless shell
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/markdowned
+        key: headless-shell-${{ hashFiles('src/Markdowned/Browser/browser.json') }}
+    - name: Download the pinned headless shell
+      working-directory: ./src
+      run: dotnet run --project Markdowned.Cli -- install-browser | tee ../browser-path.txt
+    - name: Wrap the browser (the runner has no usable sandbox)
+      run: |
+        printf '#!/bin/sh\nexec "%s" --no-sandbox "$@"\n' "$(tail -n 1 browser-path.txt)" > "$RUNNER_TEMP/chrome.sh"
+        chmod +x "$RUNNER_TEMP/chrome.sh"
+    - name: Test
+      working-directory: ./src
+      env:
+        MARKDOWNED_BROWSER: ${{ runner.temp }}/chrome.sh
+      run: dotnet test Tests/Markdowned.Integration.Tests --verbosity normal
