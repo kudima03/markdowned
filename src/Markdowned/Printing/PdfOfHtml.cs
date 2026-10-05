@@ -2,8 +2,10 @@ using System.Text.Json;
 using Markdowned.Abstractions.Browser;
 using Markdowned.Abstractions.DevTools;
 using Markdowned.Abstractions.Markdown;
+using Markdowned.Abstractions.Page;
 using Markdowned.Abstractions.Printing;
 using Markdowned.DevTools;
+using Markdowned.Page;
 using Pure.Primitives.Abstractions.String;
 
 namespace Markdowned.Printing;
@@ -14,12 +16,20 @@ public sealed record PdfOfHtml : IPdf
 
     private readonly IHtml _html;
 
+    private readonly IPageResources _assets;
+
     private readonly IString _parameters;
 
-    public PdfOfHtml(IBrowserLaunch launch, IHtml html, IString parameters)
+    public PdfOfHtml(
+        IBrowserLaunch launch,
+        IHtml html,
+        IPageResources assets,
+        IString parameters
+    )
     {
         _launch = launch;
         _html = html;
+        _assets = assets;
         _parameters = parameters;
     }
 
@@ -61,26 +71,57 @@ public sealed record PdfOfHtml : IPdf
             new PageCommand(sessionId, "Page.enable", new JsonObject())
         );
 
-        string frameId = (
-            await session.Send(
-                new PageCommand(sessionId, "Page.getFrameTree", new JsonObject())
-            )
-        )
-            .GetProperty("frameTree")
-            .GetProperty("frame")
-            .GetProperty("id")
-            .GetString()!;
-
         _ = await session.Send(
             new PageCommand(
                 sessionId,
-                "Page.setDocumentContent",
+                "Fetch.enable",
                 new JsonObject(
-                    new KeyValuePair<string, object>("frameId", frameId),
-                    new KeyValuePair<string, object>("html", _html.TextValue)
+                    new KeyValuePair<string, object>(
+                        "patterns",
+                        new JsonArray(
+                            new JsonObject(
+                                new KeyValuePair<string, object>("urlPattern", "*")
+                            )
+                        )
+                    )
                 )
             )
         );
+
+        TaskCompletionSource<bool> loaded = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        Task serving = new FetchServing(
+            session,
+            sessionId,
+            new CombinedResources(_assets, new SingleResource(new HtmlResource(_html))),
+            loaded
+        ).Served;
+
+        Task ready = Task.WhenAll(
+            session.Send(
+                new PageCommand(
+                    sessionId,
+                    "Page.navigate",
+                    new JsonObject(
+                        new KeyValuePair<string, object>(
+                            "url",
+                            $"{FetchServing.Origin}/index.html"
+                        )
+                    )
+                )
+            ),
+            loaded.Task
+        );
+
+        if (await Task.WhenAny(ready, serving) != ready)
+        {
+            await serving;
+
+            throw new DevToolsException("The browser closed before the page loaded.");
+        }
+
+        await ready;
 
         _ = await session.Send(
             new PageCommand(
@@ -89,7 +130,7 @@ public sealed record PdfOfHtml : IPdf
                 new JsonObject(
                     new KeyValuePair<string, object>(
                         "expression",
-                        "document.fonts.ready.then(() => true)"
+                        "window.markdownedReady"
                     ),
                     new KeyValuePair<string, object>("awaitPromise", true)
                 )

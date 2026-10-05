@@ -161,6 +161,61 @@ public sealed record CommandTests
     }
 
     [Fact]
+    public async Task RejectsUnknownPaper()
+    {
+        await using FakeDevToolsServer server = new FakeDevToolsServer();
+        using FakeBrowser fake = FakeBrowser.Listening(server.Url);
+        using TempDirectory directory = new TempDirectory();
+        string input = Path.Combine(directory.Path, "doc.md");
+        await File.WriteAllTextAsync(input, "# Title");
+
+        ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() =>
+            Lines(input, "--browser", fake.Executable, "--paper", "B5")
+        );
+
+        Assert.Contains("A4, Letter or Legal", error.Message);
+    }
+
+    [Fact]
+    public async Task RejectsMarginThatIsNotANumber()
+    {
+        ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() =>
+            Lines("in.md", "--margin", "wide", "--browser", "x")
+        );
+
+        Assert.Contains("--margin expects a number", error.Message);
+    }
+
+    [Fact]
+    public async Task PassesPaperLandscapeAndMarginToPrinting()
+    {
+        await using FakeDevToolsServer server = new FakeDevToolsServer();
+        using FakeBrowser fake = FakeBrowser.Listening(server.Url);
+        using TempDirectory directory = new TempDirectory();
+        string input = Path.Combine(directory.Path, "doc.md");
+        await File.WriteAllTextAsync(input, "# Title");
+
+        _ = await Lines(
+            input,
+            "--browser",
+            fake.Executable,
+            "--paper",
+            "Letter",
+            "--landscape",
+            "--margin",
+            "10.5"
+        );
+
+        string printing = server.Messages.Single(message =>
+            message.Contains("Page.printToPDF")
+        );
+
+        Assert.Contains("\"paperWidth\":8.5", printing);
+        Assert.Contains("\"landscape\":true", printing);
+        Assert.Contains($"\"marginTop\":{10.5 / 25.4}".Replace(',', '.'), printing);
+    }
+
+    [Fact]
     public async Task ReportsBrowserFailure()
     {
         using FakeBrowser fake = FakeBrowser.Failing("boom");

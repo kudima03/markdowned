@@ -7,6 +7,7 @@ public static class Help
 
         Usage: markdowned <input.md | -> [-o|--output <file.pdf | ->]
                           [--browser <path>] [--offline] [--quiet]
+                          [--paper A4|Letter|Legal] [--landscape] [--margin <mm>]
                           [--help] [--version]
                markdowned install-browser
 

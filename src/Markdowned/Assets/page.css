@@ -1,0 +1,12 @@
+/* GitHub's font stack as it resolves on Linux, from the embedded fonts. */
+.markdown-body {
+  font-family: "Noto Sans", sans-serif, "Noto Color Emoji";
+}
+
+.markdown-body :is(code, kbd, pre, samp, tt) {
+  font-family: "Liberation Mono", monospace, "Noto Color Emoji";
+}
+
+/* Width of the README body on github.com; the print scale fits it to the page. */
+html, body { margin: 0; padding: 0; background: #fff; }
+.markdown-body { box-sizing: border-box; width: 838px; }

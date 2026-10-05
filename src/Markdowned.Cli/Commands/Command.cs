@@ -60,12 +60,42 @@ public sealed record Command : IOutput
         }
     }
 
+    private IString Paper
+    {
+        get
+        {
+            IString requested = new OptionValue(["--paper"], _arguments);
+
+            return requested.TextValue.Length > 0 ? requested : new String("A4");
+        }
+    }
+
+    private double Margin
+    {
+        get
+        {
+            string requested = new OptionValue(["--margin"], _arguments).TextValue;
+
+            return requested.Length == 0 ? 15
+                : double.TryParse(
+                    requested,
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out double millimetres
+                )
+                    ? millimetres
+                : throw new ArgumentException(
+                    $"--margin expects a number, got '{requested}'."
+                );
+        }
+    }
+
     private IOutput Chosen =>
         Has("--version") ? new TextOutput(new String(Version.Text))
         : Has("--help") || Input.TextValue.Length == 0
             ? new TextOutput(new String(Help.Text))
         : Input.TextValue == "install-browser" ? new InstallBrowser(Install)
-        : new PdfFile(Input, Output, Launch);
+        : new PdfFile(Input, Output, Launch, Paper, Has("--landscape"), Margin);
 
     public IAsyncEnumerator<IString> GetAsyncEnumerator(
         CancellationToken cancellationToken = default

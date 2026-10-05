@@ -14,9 +14,12 @@ public sealed class FakeDevToolsServer : IAsyncDisposable
 
     private readonly string _failMethod;
 
-    public FakeDevToolsServer(string failMethod = "")
+    private readonly bool _neverLoads;
+
+    public FakeDevToolsServer(string failMethod = "", bool neverLoads = false)
     {
         _failMethod = failMethod;
+        _neverLoads = neverLoads;
         int port = FreePort();
         Url = $"ws://127.0.0.1:{port}/devtools/browser/fake";
         _listener.Prefixes.Add($"http://127.0.0.1:{port}/");
@@ -106,13 +109,56 @@ public sealed class FakeDevToolsServer : IAsyncDisposable
                     ? $$$"""{"id":{{{id}}},"error":{"message":"boom"}}"""
                     : $$$"""{"id":{{{id}}},"result":{{{Result(method)}}}}""";
 
-            await socket.SendAsync(
-                Encoding.UTF8.GetBytes(reply),
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None
-            );
+            await Push(socket, reply);
+
+            if (method == "Page.navigate")
+            {
+                if (_neverLoads)
+                {
+                    await socket.CloseOutputAsync(
+                        WebSocketCloseStatus.NormalClosure,
+                        string.Empty,
+                        CancellationToken.None
+                    );
+
+                    break;
+                }
+
+                foreach (string paused in Paused())
+                {
+                    await Push(socket, paused);
+                }
+            }
         }
+    }
+
+    private static Task Push(WebSocket socket, string message)
+    {
+        return socket.SendAsync(
+            Encoding.UTF8.GetBytes(message),
+            WebSocketMessageType.Text,
+            true,
+            CancellationToken.None
+        );
+    }
+
+    private static IEnumerable<string> Paused()
+    {
+        yield return /*lang=json,strict*/
+        """{"method":"Page.loadEventFired","sessionId":"S1","params":{}}""";
+        yield return Request("R0", "https://markdowned.local/index.html", "OTHER");
+        yield return Request("R1", "https://markdowned.local/index.html", "S1");
+        yield return Request("R2", "https://example.com/tracker.png", "S1");
+        yield return Request(
+            "R3",
+            "https://markdowned.local/assets/page.css?v=1#x",
+            "S1"
+        );
+    }
+
+    private static string Request(string id, string url, string session)
+    {
+        return $$$$"""{"method":"Fetch.requestPaused","sessionId":"{{{{session}}}}","params":{"requestId":"{{{{id}}}}","request":{"url":"{{{{url}}}}"}}}""";
     }
 
     private static string Result(string method)

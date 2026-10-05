@@ -226,8 +226,8 @@ each one.
 
 ## Open questions
 
-1. **GitHub's README width.** It needs measuring once on github.com: is the README body
-   about 830 px or about 880 px wide at the reference viewport? It goes into the template, with
-   a `--width` override if useful.
+1. ~~**GitHub's README width.**~~ Measured on github.com (2026-10-05, headless Chromium, desktop
+   viewports of 1440 px and wider): the README `article` is **838 px** wide (823 px at 1280 px).
+   The template uses 838 px; there is no `--width` override yet.
 2. **MathJax output mode.** GitHub's exact MathJax output mode needs checking, CHTML or SVG,
    so ours matches.

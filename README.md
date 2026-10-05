@@ -14,6 +14,17 @@ possible.
 
 > **Status:** under construction. See [PLAN.md](PLAN.md) for the design and delivery plan.
 
+## Installation
+
+```shell
+dotnet tool install -g Markdowned.Cli
+```
+
+The first run without `--browser` downloads a pinned `chrome-headless-shell` (about 120 MB) into
+the per-user cache; `markdowned install-browser` does it ahead of time. On a minimal Linux
+machine Chromium needs shared libraries, e.g. on Debian/Ubuntu:
+`sudo apt install libnss3 libgbm1 libasound2t64 libatk-bridge2.0-0 libcups2 libxkbcommon0`.
+
 ## Usage
 
 ```shell
@@ -21,7 +32,19 @@ markdowned README.md                           # → README.pdf next to the inpu
 markdowned README.md -o out.pdf --paper Letter --landscape
 markdowned README.md --browser "/usr/bin/google-chrome"
 cat notes.md | markdowned - -o - > notes.pdf
+markdowned install-browser
 ```
+
+| Option | Description |
+|---|---|
+| `-o`, `--output <file.pdf \| ->` | Output file; `-` is stdout. Default: next to the input |
+| `--browser <path>` | Use this Chromium-based browser instead of the pinned download |
+| `--paper A4\|Letter\|Legal` | Paper size (default A4) |
+| `--landscape` | Landscape orientation |
+| `--margin <mm>` | Page margin in millimetres (default 15) |
+| `--offline` | Never download anything |
+| `--quiet` | No progress on stderr |
+| `--help`, `--version` | |
 
 ## Design
 

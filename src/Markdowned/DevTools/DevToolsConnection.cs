@@ -19,6 +19,8 @@ public sealed record DevToolsConnection : IDevToolsSession
         _reader = Task.Run(Read);
     }
 
+    public IAsyncEnumerable<JsonElement> Events => _state.Events.Reader.ReadAllAsync();
+
     public async Task<JsonElement> Send(IDevToolsCommand command)
     {
         int id = _state.NextId;
@@ -115,6 +117,8 @@ public sealed record DevToolsConnection : IDevToolsSession
         }
         finally
         {
+            _ = _state.Events.Writer.TryComplete();
+
             foreach (TaskCompletionSource<JsonElement> pending in _state.Pending.Values)
             {
                 _ = pending.TrySetException(
@@ -128,6 +132,13 @@ public sealed record DevToolsConnection : IDevToolsSession
     {
         using JsonDocument document = JsonDocument.Parse(payload);
         JsonElement root = document.RootElement;
+
+        if (root.TryGetProperty("method", out JsonElement _))
+        {
+            _ = _state.Events.Writer.TryWrite(root.Clone());
+
+            return;
+        }
 
         if (
             !root.TryGetProperty("id", out JsonElement id)

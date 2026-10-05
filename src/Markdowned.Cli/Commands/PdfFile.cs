@@ -17,11 +17,27 @@ public sealed record PdfFile : IOutput
 
     private readonly IBrowserLaunch _browser;
 
-    public PdfFile(IString input, IString output, IBrowserLaunch browser)
+    private readonly IString _paper;
+
+    private readonly bool _landscape;
+
+    private readonly double _margin;
+
+    public PdfFile(
+        IString input,
+        IString output,
+        IBrowserLaunch browser,
+        IString paper,
+        bool landscape,
+        double margin
+    )
     {
         _input = input;
         _output = output;
         _browser = browser;
+        _paper = paper;
+        _landscape = landscape;
+        _margin = margin;
     }
 
     private string Markdown =>
@@ -38,8 +54,9 @@ public sealed record PdfFile : IOutput
     private IPdf Pdf =>
         new PdfOfHtml(
             _browser,
-            new HtmlDocument(new MarkdownHtml(new String(Markdown))),
-            new PrintParameters()
+            new PageHtml(new MarkdownHtml(new String(Markdown))),
+            new EmbeddedResources(),
+            new PrintParameters(_paper, _landscape, _margin)
         );
 
     public async IAsyncEnumerator<IString> GetAsyncEnumerator(

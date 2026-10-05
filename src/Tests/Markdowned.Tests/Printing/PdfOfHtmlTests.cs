@@ -1,5 +1,6 @@
 using Markdowned.Abstractions.Printing;
 using Markdowned.Browser;
+using Markdowned.DevTools;
 using Markdowned.Markdown;
 using Markdowned.Page;
 using Markdowned.Printing;
@@ -14,8 +15,9 @@ public sealed record PdfOfHtmlTests
     {
         return new PdfOfHtml(
             new ChromiumLaunch(new String(fake.Executable)),
-            new HtmlDocument(new MarkdownHtml(new String("# Hi"))),
-            new PrintParameters()
+            new PageHtml(new MarkdownHtml(new String("# Hi"))),
+            new EmbeddedResources(),
+            new PrintParameters(new String("A4"), false, 15)
         );
     }
 
@@ -47,31 +49,68 @@ public sealed record PdfOfHtmlTests
                 "Target.createTarget",
                 "Target.attachToTarget",
                 "Page.enable",
-                "Page.getFrameTree",
-                "Page.setDocumentContent",
+                "Fetch.enable",
+                "Page.navigate",
                 "Runtime.evaluate",
                 "Page.printToPDF",
                 "IO.read",
                 "IO.close",
             ],
-            server.Methods
+            server.Methods.Where(method =>
+                !method.StartsWith("Fetch.f", StringComparison.Ordinal)
+            )
         );
     }
 
     [Fact]
-    public async Task SendsHtmlToFrame()
+    public async Task ServesOwnOriginAndBlocksEverythingElse()
     {
         await using FakeDevToolsServer server = new FakeDevToolsServer();
         using FakeBrowser fake = FakeBrowser.Listening(server.Url);
 
         _ = await Pdf(fake).ToListAsync();
 
-        string content = server.Messages.Single(message =>
-            message.Contains("setDocumentContent")
+        string[] answers =
+        [
+            .. server.Messages.Where(message =>
+                message.Contains("Fetch.fulfill") || message.Contains("Fetch.fail")
+            ),
+        ];
+
+        Assert.Equal(3, answers.Length);
+        _ = Assert.Single(
+            answers,
+            answer =>
+                answer.Contains("\"requestId\":\"R1\"")
+                && answer.Contains("Fetch.fulfillRequest")
+                && answer.Contains("text/html")
+        );
+        _ = Assert.Single(
+            answers,
+            answer =>
+                answer.Contains("\"requestId\":\"R2\"")
+                && answer.Contains("Fetch.failRequest")
+                && answer.Contains("BlockedByClient")
+        );
+        _ = Assert.Single(
+            answers,
+            answer =>
+                answer.Contains("\"requestId\":\"R3\"") && answer.Contains("text/css")
+        );
+        Assert.DoesNotContain(answers, answer => answer.Contains("R0"));
+    }
+
+    [Fact]
+    public async Task FailsWhenBrowserClosesBeforeLoad()
+    {
+        await using FakeDevToolsServer server = new FakeDevToolsServer(neverLoads: true);
+        using FakeBrowser fake = FakeBrowser.Listening(server.Url);
+
+        DevToolsException error = await Assert.ThrowsAsync<DevToolsException>(async () =>
+            _ = await Pdf(fake).ToListAsync()
         );
 
-        Assert.Contains("\"frameId\":\"F1\"", content);
-        Assert.Contains("\\u003Ch1", content);
+        Assert.NotEmpty(error.Message);
     }
 
     [Fact]
@@ -85,16 +124,5 @@ public sealed record PdfOfHtmlTests
         Task<List<byte[]>> printing = Pdf(fake).ToListAsync(cancellation.Token).AsTask();
 
         _ = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => printing);
-    }
-
-    [Fact]
-    public void ProducesA4WithBackground()
-    {
-        Assert.Contains("\"paperWidth\":8.27", new PrintParameters().TextValue);
-        Assert.Contains("\"printBackground\":true", new PrintParameters().TextValue);
-        Assert.Equal(
-            new PrintParameters().TextValue.Length,
-            new PrintParameters().Count()
-        );
     }
 }

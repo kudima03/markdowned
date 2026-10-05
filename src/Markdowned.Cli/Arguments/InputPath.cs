@@ -6,7 +6,14 @@ namespace Markdowned.Cli.Arguments;
 
 public sealed record InputPath : IString
 {
-    private static readonly string[] ValueOptions = ["-o", "--output", "--browser"];
+    private static readonly string[] ValueOptions =
+    [
+        "-o",
+        "--output",
+        "--browser",
+        "--paper",
+        "--margin",
+    ];
 
     private readonly IEnumerable<string> _arguments;
 
