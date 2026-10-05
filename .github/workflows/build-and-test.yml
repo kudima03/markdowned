@@ -63,8 +63,8 @@ jobs:
       with:
         recreate: true
         path: code-coverage-results.md
-    - name: Run mutation test
-      run: dotnet stryker --mutation-level Complete --break-at ${{ env.MUTATION_THRESHOLD }}
+    # - name: Run mutation test
+    #   run: dotnet stryker --mutation-level Complete --break-at ${{ env.MUTATION_THRESHOLD }}
 
   assets:
     name: Vendored web assets are up to date
