@@ -172,6 +172,7 @@ public sealed partial record NormalizedHtml : IString
             element
                 .Attributes.Where(attribute =>
                     attribute.Name != "data-canonical-src"
+                    && attribute.Name != "data-run-id"
                     && !attribute.Name.StartsWith(
                         "data-markdowned-",
                         StringComparison.Ordinal

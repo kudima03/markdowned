@@ -31,3 +31,6 @@ URLs are mapped back to their canonical URL and random id suffixes are dropped.
   found by the same name/extension lookup, and the wrapper markup matches, but a few
   tokens can get different `pl-*` classes (for example `var` in C#). The comparison unwraps
   the highlight spans, so it checks the structure, not the colours.
+- **Math:** the server markup (`math-renderer`) matches GitHub's, and MathJax typesets it in the
+  page. GitHub's client loader is not public; we use MathJax 3 with SVG output (no web fonts), so
+  glyph shapes and spacing may differ slightly. `\$x\$` is text here but math on GitHub.

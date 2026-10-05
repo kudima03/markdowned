@@ -15,6 +15,18 @@ public sealed record PageHtml : IHtml
         + "blocks.forEach((block, index) => { block.querySelector('pre').innerHTML = html[index]; }); }"
         + "catch (error) { console.error(error); } })()); }";
 
+    private const string Math =
+        "<script>window.MathJax = { startup: { typeset: false }, svg: { fontCache: 'none' }, "
+        + "options: { enableMenu: false } };</script>"
+        + "<script src=\"/assets/js/mathjax.js\"></script>"
+        + "<script>window.markdownedTasks.push((async () => { await MathJax.startup.promise;"
+        + "for (const element of document.querySelectorAll('math-renderer')) {"
+        + "const display = element.classList.contains('js-display-math');"
+        + "const tex = element.textContent.replace(/^\\$+|\\$+$/g, '').trim();"
+        + "try { element.replaceChildren(await MathJax.tex2svgPromise(tex, { display })); }"
+        + "catch (error) { console.error(error); } }"
+        + "document.head.appendChild(MathJax.svgStylesheet()); })());</script>";
+
     private readonly IHtml _body;
 
     public PageHtml(IHtml body)
@@ -38,6 +50,11 @@ public sealed record PageHtml : IHtml
         + "do { void document.body.offsetHeight; await document.fonts.ready; } "
         + "while ([...document.fonts].some(font => font.status === 'loading'));"
         + "resolve(); }));</script>"
+        + (
+            _body.TextValue.Contains("<math-renderer", StringComparison.Ordinal)
+                ? Math
+                : string.Empty
+        )
         + "</head><body><article class=\"markdown-body entry-content\">"
         + _body.TextValue
         + "</article></body></html>";

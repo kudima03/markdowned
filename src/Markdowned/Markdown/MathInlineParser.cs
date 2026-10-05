@@ -25,7 +25,7 @@ public sealed class MathInlineParser : InlineParser
             if (
                 tex[index] == '\\'
                 && index + 1 < tex.Length
-                && char.IsAsciiLetterOrDigit(tex[index + 1]) == false
+                && !char.IsAsciiLetterOrDigit(tex[index + 1])
                 && char.IsAscii(tex[index + 1])
                 && !char.IsWhiteSpace(tex[index + 1])
             )
