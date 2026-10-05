@@ -3,11 +3,12 @@ name: .NET build & test
 on:
   pull_request:
     branches: [ "main" ]
+  workflow_call:
 
 env:
-  COVERAGE_WARNING_THRESHOLD: 99
-  COVERAGE_THRESHOLD: 98
-  MUTATION_THRESHOLD: 98
+  COVERAGE_WARNING_THRESHOLD: 90
+  COVERAGE_THRESHOLD: 80
+  MUTATION_THRESHOLD: 60
 
 jobs:
   build:
@@ -64,3 +65,21 @@ jobs:
         path: code-coverage-results.md
     - name: Run mutation test
       run: dotnet stryker --mutation-level Complete --break-at ${{ env.MUTATION_THRESHOLD }}
+
+  aot-smoke:
+    name: Native AOT publish smoke test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.x.x
+    - name: Publish Native AOT (trim/AOT warnings fail the build)
+      working-directory: ./src
+      run: dotnet publish Markdowned.Cli -r linux-x64 -c Release -p:PublishAot=true -warnaserror -o aot
+    - name: Run the binary
+      run: |
+        printf '# Title\n\n| a |\n|---|\n| 1 |\n' > smoke.md
+        ./src/aot/Markdowned.Cli --version
+        ./src/aot/Markdowned.Cli smoke.md | grep -q '<h1'

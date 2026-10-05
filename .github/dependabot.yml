@@ -1,5 +1,14 @@
 version: 2
 updates:
+- package-ecosystem: nuget
+  directories:
+    - "src/Markdowned"
+    - "src/Markdowned.Abstractions"
+    - "src/Markdowned.Cli"
+    - "src/Tests/Markdowned.Tests"
+    - "src/Tests/Markdowned.Cli.Tests"
+  schedule:
+    interval: daily
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
