@@ -4,7 +4,8 @@ using Markdig.Syntax;
 
 namespace Markdowned.Markdown.Renderers;
 
-public sealed class GitHubHeadingRenderer : HtmlObjectRenderer<HeadingBlock>
+public sealed class GitHubHeadingRenderer(HeadingSlugs slugs)
+    : HtmlObjectRenderer<HeadingBlock>
 {
     public const string LinkIcon =
         "<svg data-component=\"Octicon\" class=\"octicon octicon-link\" viewBox=\"0 0 16 16\" version=\"1.1\" width=\"16\" "
@@ -17,12 +18,7 @@ public sealed class GitHubHeadingRenderer : HtmlObjectRenderer<HeadingBlock>
         + "0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z\">"
         + "</path></svg>";
 
-    private readonly HeadingSlugs _slugs;
-
-    public GitHubHeadingRenderer(HeadingSlugs slugs)
-    {
-        _slugs = slugs;
-    }
+    private readonly HeadingSlugs _slugs = slugs;
 
     protected override void Write(HtmlRenderer renderer, HeadingBlock obj)
     {

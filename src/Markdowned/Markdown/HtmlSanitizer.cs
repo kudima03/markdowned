@@ -11,7 +11,7 @@ namespace Markdowned.Markdown;
 /// It keeps the stack of open elements between calls, because the parser hands over inline
 /// tags one at a time.
 /// </summary>
-public sealed class HtmlSanitizer
+public sealed class HtmlSanitizer(HeadingSlugs slugs)
 {
     private static readonly HashSet<string> TagFilter =
     [
@@ -168,27 +168,24 @@ public sealed class HtmlSanitizer
         "width",
     ];
 
-    private readonly HeadingSlugs _slugs;
+    private readonly HeadingSlugs _slugs = slugs;
 
     private readonly List<string> _open = [];
 
     private readonly List<int> _droppedAnchors = [];
 
-    public HtmlSanitizer(HeadingSlugs slugs)
+    private bool Inside(string name)
     {
-        _slugs = slugs;
+        return _open.Contains(name);
     }
 
-    private bool Inside(string name) => _open.Contains(name);
-
-    private static bool IsSafe(string url, params string[] schemes)
+    public static bool IsSafe(string url, params string[] schemes)
     {
-        string cleaned = new string(
-            WebUtility
+        string cleaned = new string([
+            .. WebUtility
                 .HtmlDecode(url)
-                .Where(symbol => !char.IsControl(symbol) && symbol != ' ')
-                .ToArray()
-        );
+                .Where(symbol => !char.IsControl(symbol) && symbol != ' '),
+        ]);
         int colon = cleaned.IndexOf(':', StringComparison.Ordinal);
         int slash = cleaned.IndexOfAny(['/', '?', '#']);
 
@@ -197,12 +194,16 @@ public sealed class HtmlSanitizer
             || schemes.Contains(cleaned[..colon], StringComparer.OrdinalIgnoreCase);
     }
 
-    private static bool IsAbsolute(string url) =>
-        url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-        || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+    private static bool IsAbsolute(string url)
+    {
+        return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+    }
 
-    private static string Quote(string value) =>
-        value.Replace("\"", "&quot;", StringComparison.Ordinal);
+    private static string Quote(string value)
+    {
+        return value.Replace("\"", "&quot;", StringComparison.Ordinal);
+    }
 
     private static List<(string Name, string? Value)> ParseAttributes(string text)
     {
@@ -326,6 +327,14 @@ public sealed class HtmlSanitizer
             {
                 int end = html.IndexOf("-->", index + 4, StringComparison.Ordinal);
                 index = end < 0 ? html.Length : end + 3;
+
+                continue;
+            }
+
+            if (index + 1 < html.Length && html[index + 1] is '!' or '?')
+            {
+                int end = html.IndexOf('>', index);
+                index = end < 0 ? html.Length : end + 1;
 
                 continue;
             }
@@ -499,19 +508,18 @@ public sealed class HtmlSanitizer
         return tagEnd + 1;
     }
 
-    private static string Tag(
-        string name,
-        List<(string Name, string? Value)> attributes
-    ) =>
-        $"<{name}"
-        + string.Concat(
-            attributes.Select(attribute =>
-                attribute.Value is null
-                    ? $" {attribute.Name}=\"\""
-                    : $" {attribute.Name}=\"{Quote(attribute.Value)}\""
+    private static string Tag(string name, List<(string Name, string? Value)> attributes)
+    {
+        return $"<{name}"
+            + string.Concat(
+                attributes.Select(attribute =>
+                    attribute.Value is null
+                        ? $" {attribute.Name}=\"\""
+                        : $" {attribute.Name}=\"{Quote(attribute.Value)}\""
+                )
             )
-        )
-        + ">";
+            + ">";
+    }
 
     private static List<(string Name, string? Value)> Filter(
         string element,

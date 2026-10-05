@@ -4,14 +4,10 @@ using Markdig.Syntax;
 
 namespace Markdowned.Markdown.Renderers;
 
-public sealed class GitHubHtmlBlockRenderer : HtmlObjectRenderer<HtmlBlock>
+public sealed class GitHubHtmlBlockRenderer(HtmlSanitizer sanitizer)
+    : HtmlObjectRenderer<HtmlBlock>
 {
-    private readonly HtmlSanitizer _sanitizer;
-
-    public GitHubHtmlBlockRenderer(HtmlSanitizer sanitizer)
-    {
-        _sanitizer = sanitizer;
-    }
+    private readonly HtmlSanitizer _sanitizer = sanitizer;
 
     protected override void Write(HtmlRenderer renderer, HtmlBlock obj)
     {
@@ -25,7 +21,7 @@ public sealed class GitHubHtmlBlockRenderer : HtmlObjectRenderer<HtmlBlock>
                 && raw.Contains("<img", StringComparison.OrdinalIgnoreCase)
             );
 
-        renderer.EnsureLine();
+        _ = renderer.EnsureLine();
         _ = renderer.WriteLine(
             image ? $"<p dir=\"auto\">{html.Trim()}</p>" : html.Trim('\n')
         );

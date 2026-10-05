@@ -20,3 +20,9 @@ URLs are mapped back to their canonical URL and random id suffixes are dropped.
   constant one (the comparison ignores it).
 - **Emoji:** shortcodes come from Markdig's table, minus names that do not start with a letter
   or digit (GitHub leaves `:-1:` as text). Custom emoji such as `:octocat:` stay text.
+- **Raw HTML:** GitHub parses raw HTML into a tree and sanitises the tree; we sanitise the
+  token stream (GFM tag filter, GitHub's element and attribute allow-list, safe URL protocols,
+  `user-content-` ids, `dir="auto"`, image links, pictures, tables, headings). The result is the
+  same for well-formed HTML. Differences appear for malformed or exotic HTML, for example block
+  elements that GitHub's parser hoists out of a paragraph before removing them, and for GitHub
+  auto-linking URLs inside text that the tag filter escaped.

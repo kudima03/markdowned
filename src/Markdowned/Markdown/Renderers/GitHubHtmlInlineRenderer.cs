@@ -4,14 +4,10 @@ using Markdig.Syntax.Inlines;
 
 namespace Markdowned.Markdown.Renderers;
 
-public sealed class GitHubHtmlInlineRenderer : HtmlObjectRenderer<HtmlInline>
+public sealed class GitHubHtmlInlineRenderer(HtmlSanitizer sanitizer)
+    : HtmlObjectRenderer<HtmlInline>
 {
-    private readonly HtmlSanitizer _sanitizer;
-
-    public GitHubHtmlInlineRenderer(HtmlSanitizer sanitizer)
-    {
-        _sanitizer = sanitizer;
-    }
+    private readonly HtmlSanitizer _sanitizer = sanitizer;
 
     protected override void Write(HtmlRenderer renderer, HtmlInline obj)
     {

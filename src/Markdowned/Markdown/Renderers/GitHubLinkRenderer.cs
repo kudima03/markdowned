@@ -6,13 +6,10 @@ namespace Markdowned.Markdown.Renderers;
 
 public sealed class GitHubLinkRenderer : HtmlObjectRenderer<LinkInline>
 {
-    private static bool IsExternal(string? url)
+    private static bool IsExternal(string url)
     {
-        return url is not null
-            && (
-                url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
-            );
+        return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool InsideLink(LinkInline link)
@@ -34,6 +31,8 @@ public sealed class GitHubLinkRenderer : HtmlObjectRenderer<LinkInline>
 
     protected override void Write(HtmlRenderer renderer, LinkInline obj)
     {
+        string url = obj.Url ?? string.Empty;
+
         if (obj.IsImage)
         {
             WriteImage(renderer, obj);
@@ -41,17 +40,21 @@ public sealed class GitHubLinkRenderer : HtmlObjectRenderer<LinkInline>
             return;
         }
 
-        _ = renderer
-            .Write("<a href=\"")
-            .WriteEscapeUrl(obj.GetDynamicUrl?.Invoke() ?? obj.Url);
-        _ = renderer.Write('"');
+        if (!HtmlSanitizer.IsSafe(url, "http", "https", "mailto"))
+        {
+            renderer.WriteChildren(obj);
+
+            return;
+        }
+
+        _ = renderer.Write("<a href=\"").WriteEscapeUrl(url).Write('"');
 
         if (!string.IsNullOrEmpty(obj.Title))
         {
             _ = renderer.Write(" title=\"").WriteEscape(obj.Title).Write('"');
         }
 
-        if (IsExternal(obj.Url))
+        if (IsExternal(url))
         {
             _ = renderer.Write(" rel=\"nofollow\"");
         }
@@ -63,17 +66,27 @@ public sealed class GitHubLinkRenderer : HtmlObjectRenderer<LinkInline>
 
     private static void WriteImage(HtmlRenderer renderer, LinkInline obj)
     {
-        bool wrap = IsExternal(obj.Url) && !InsideLink(obj);
+        string url = HtmlSanitizer.IsSafe(obj.Url ?? string.Empty, "http", "https")
+            ? obj.Url ?? string.Empty
+            : string.Empty;
+        bool wrap = IsExternal(url) && !InsideLink(obj);
 
         if (wrap)
         {
             _ = renderer.Write(
                 "<a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\""
             );
-            _ = renderer.WriteEscapeUrl(obj.Url).Write("\">");
+            _ = renderer.WriteEscapeUrl(url).Write("\">");
         }
 
-        _ = renderer.Write("<img src=\"").WriteEscapeUrl(obj.Url).Write("\" alt=\"");
+        _ = renderer.Write("<img");
+
+        if (url.Length > 0)
+        {
+            _ = renderer.Write(" src=\"").WriteEscapeUrl(url).Write('"');
+        }
+
+        _ = renderer.Write(" alt=\"");
         _ = renderer.WriteEscape(new InlineText(obj).TextValue).Write('"');
 
         if (!string.IsNullOrEmpty(obj.Title))
