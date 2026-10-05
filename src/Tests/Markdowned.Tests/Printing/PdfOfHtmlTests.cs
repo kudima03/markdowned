@@ -11,6 +11,13 @@ namespace Markdowned.Tests.Printing;
 
 public sealed record PdfOfHtmlTests
 {
+    private static int AnswerCount(FakeDevToolsServer server)
+    {
+        return server.Messages.Count(message =>
+            message.Contains("Fetch.fulfill") || message.Contains("Fetch.fail")
+        );
+    }
+
     private static IPdf Pdf(FakeBrowser fake)
     {
         return new PdfOfHtml(
@@ -69,6 +76,11 @@ public sealed record PdfOfHtmlTests
         using FakeBrowser fake = FakeBrowser.Listening(server.Url);
 
         _ = await Pdf(fake).ToListAsync();
+
+        for (int wait = 0; wait < 100 && AnswerCount(server) < 3; wait++)
+        {
+            await Task.Delay(20);
+        }
 
         string[] answers =
         [

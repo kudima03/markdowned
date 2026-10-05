@@ -169,6 +169,17 @@ public sealed record PdfOfHtml : IPdf
                 new JsonObject(new KeyValuePair<string, object>("handle", handle))
             )
         );
+
+        await session.DisposeAsync();
+
+        try
+        {
+            await serving;
+        }
+        catch (DevToolsException)
+        {
+            // a request that was still paused when the browser was closed
+        }
     }
 
     public override int GetHashCode()

@@ -15,4 +15,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `--browser <path>` to use any Chromium-based browser; otherwise a pinned
   `chrome-headless-shell` is downloaded once into the per-user cache and verified by SHA-256.
 * `markdowned install-browser`, `--offline`, `--quiet`.
+* Alerts, footnotes, YAML front matter tables and emoji shortcodes, rendered with GitHub's markup.
 * Exit codes: 0 success, 1 arguments or I/O, 2 browser, 3 render.

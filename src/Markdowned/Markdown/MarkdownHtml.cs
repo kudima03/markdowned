@@ -1,4 +1,5 @@
 using Markdig;
+using Markdig.Extensions.Emoji;
 using Markdig.Extensions.EmphasisExtras;
 using Markdowned.Abstractions.Markdown;
 using Pure.Primitives.Abstractions.Char;
@@ -16,12 +17,29 @@ public sealed record MarkdownHtml : IHtml
         _markdown = markdown;
     }
 
+    /// <summary>GitHub leaves shortcodes that do not start with a letter or digit untouched.</summary>
+    private static EmojiMapping Emoji =>
+        new EmojiMapping(
+            EmojiMapping
+                .GetDefaultEmojiShortcodeToUnicode()
+                .Where(entry =>
+                    (entry.Key.Length > 1 && char.IsAsciiLetterOrDigit(entry.Key[1]))
+                    || entry.Key.StartsWith(":+", StringComparison.Ordinal)
+                )
+                .ToDictionary(entry => entry.Key, entry => entry.Value),
+            new Dictionary<string, string>()
+        );
+
     private static MarkdownPipeline Pipeline =>
         new MarkdownPipelineBuilder()
             .UsePipeTables()
             .UseTaskLists()
             .UseEmphasisExtras(EmphasisExtraOptions.Strikethrough)
             .UseAutoLinks()
+            .UseAlertBlocks()
+            .UseFootnotes()
+            .UseYamlFrontMatter()
+            .UseEmojiAndSmiley(Emoji)
             .Use<GitHubHtmlExtension>()
             .Build();
 

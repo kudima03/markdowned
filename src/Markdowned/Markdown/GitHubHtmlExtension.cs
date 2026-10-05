@@ -1,6 +1,9 @@
 using Markdig;
+using Markdig.Extensions.Alerts;
+using Markdig.Extensions.Footnotes;
 using Markdig.Extensions.Tables;
 using Markdig.Extensions.TaskLists;
+using Markdig.Extensions.Yaml;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Renderers.Html.Inlines;
@@ -25,6 +28,19 @@ public sealed class GitHubHtmlExtension : IMarkdownExtension
             return;
         }
 
+        FootnoteReferences references = new FootnoteReferences();
+        _ = html.ObjectRenderers.ReplaceOrAdd<AlertBlockRenderer>(
+            new GitHubAlertRenderer()
+        );
+        _ = html.ObjectRenderers.ReplaceOrAdd<HtmlFootnoteLinkRenderer>(
+            new GitHubFootnoteLinkRenderer(references)
+        );
+        _ = html.ObjectRenderers.ReplaceOrAdd<HtmlFootnoteGroupRenderer>(
+            new GitHubFootnoteGroupRenderer(references)
+        );
+        _ = html.ObjectRenderers.ReplaceOrAdd<YamlFrontMatterHtmlRenderer>(
+            new GitHubFrontMatterRenderer()
+        );
         _ = html.ObjectRenderers.ReplaceOrAdd<HeadingRenderer>(
             new GitHubHeadingRenderer()
         );

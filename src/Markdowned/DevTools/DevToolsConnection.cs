@@ -47,12 +47,26 @@ public sealed record DevToolsConnection : IDevToolsSession
             writer.WriteEndObject();
         }
 
-        await _socket.SendAsync(
-            stream.ToArray(),
-            WebSocketMessageType.Text,
-            true,
-            CancellationToken.None
-        );
+        try
+        {
+            await _socket.SendAsync(
+                stream.ToArray(),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None
+            );
+        }
+        catch (Exception error)
+            when (error
+                    is WebSocketException
+                        or ObjectDisposedException
+                        or InvalidOperationException
+            )
+        {
+            _ = _state.Pending.TryRemove(id, out TaskCompletionSource<JsonElement>? _);
+
+            throw new DevToolsException("The browser closed the DevTools connection.");
+        }
 
         return await response.Task;
     }

@@ -13,4 +13,10 @@ URLs are mapped back to their canonical URL and random id suffixes are dropped.
 
 ## Known deviations
 
-None recorded yet.
+- **Front matter:** GitHub renders YAML front matter with a full YAML parser. We support the
+  subset it renders as nested tables: scalars, flow lists (`[a, b]`), block lists and one level
+  of maps. Deeper nesting, anchors and multi-line scalars are shown as plain text or omitted.
+- **Footnote id suffix:** GitHub appends a random 32-hex suffix to footnote ids; we use a
+  constant one (the comparison ignores it).
+- **Emoji:** shortcodes come from Markdig's table, minus names that do not start with a letter
+  or digit (GitHub leaves `:-1:` as text). Custom emoji such as `:octocat:` stay text.

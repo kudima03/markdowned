@@ -88,6 +88,12 @@ public sealed class FakeDevToolsServer : IAsyncDisposable
 
             if (received.MessageType == WebSocketMessageType.Close)
             {
+                await socket.CloseOutputAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    string.Empty,
+                    CancellationToken.None
+                );
+
                 break;
             }
 
@@ -144,8 +150,6 @@ public sealed class FakeDevToolsServer : IAsyncDisposable
 
     private static IEnumerable<string> Paused()
     {
-        yield return /*lang=json,strict*/
-        """{"method":"Page.loadEventFired","sessionId":"S1","params":{}}""";
         yield return Request("R0", "https://markdowned.local/index.html", "OTHER");
         yield return Request("R1", "https://markdowned.local/index.html", "S1");
         yield return Request("R2", "https://example.com/tracker.png", "S1");
@@ -154,6 +158,8 @@ public sealed class FakeDevToolsServer : IAsyncDisposable
             "https://markdowned.local/assets/page.css?v=1#x",
             "S1"
         );
+        yield return /*lang=json,strict*/
+        """{"method":"Page.loadEventFired","sessionId":"S1","params":{}}""";
     }
 
     private static string Request(string id, string url, string session)
