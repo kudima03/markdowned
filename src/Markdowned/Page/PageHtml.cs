@@ -6,6 +6,15 @@ namespace Markdowned.Page;
 
 public sealed record PageHtml : IHtml
 {
+    private const string Highlight =
+        "const blocks = [...document.querySelectorAll('div.highlight[data-markdowned-scope]')];"
+        + "if (blocks.length > 0) { window.markdownedTasks.push((async () => {"
+        + "try { const { highlightAll } = await import('/assets/js/starry-night/index.js');"
+        + "const html = await highlightAll(blocks.map(block => ({"
+        + "source: block.querySelector('pre').textContent, scope: block.dataset.markdownedScope })));"
+        + "blocks.forEach((block, index) => { block.querySelector('pre').innerHTML = html[index]; }); }"
+        + "catch (error) { console.error(error); } })()); }";
+
     private readonly IHtml _body;
 
     public PageHtml(IHtml body)
@@ -19,8 +28,13 @@ public sealed record PageHtml : IHtml
         + "<link rel=\"stylesheet\" href=\"/assets/fonts.css\">"
         + "<link rel=\"stylesheet\" href=\"/assets/github-markdown-light.css\">"
         + "<link rel=\"stylesheet\" href=\"/assets/page.css\">"
+        + "<script>window.markdownedTasks = [];</script>"
+        + "<script type=\"module\">"
+        + Highlight
+        + "</script>"
         + "<script>window.markdownedReady = new Promise(resolve => "
         + "window.addEventListener('load', async () => {"
+        + "await Promise.all(window.markdownedTasks);"
         + "do { void document.body.offsetHeight; await document.fonts.ready; } "
         + "while ([...document.fonts].some(font => font.status === 'loading'));"
         + "resolve(); }));</script>"

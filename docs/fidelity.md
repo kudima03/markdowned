@@ -26,3 +26,8 @@ URLs are mapped back to their canonical URL and random id suffixes are dropped.
   same for well-formed HTML. Differences appear for malformed or exotic HTML, for example block
   elements that GitHub's parser hoists out of a paragraph before removing them, and for GitHub
   auto-linking URLs inside text that the tag filter escaped.
+- **Syntax highlighting:** GitHub highlights on the server with its own grammar versions; we
+  highlight in the page with starry-night, GitHub's open-source highlighter. The language is
+  found by the same name/extension lookup, and the wrapper markup matches, but a few
+  tokens can get different `pl-*` classes (for example `var` in C#). The comparison unwraps
+  the highlight spans, so it checks the structure, not the colours.

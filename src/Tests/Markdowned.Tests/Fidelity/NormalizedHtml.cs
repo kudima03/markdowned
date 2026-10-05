@@ -170,7 +170,13 @@ public sealed partial record NormalizedHtml : IString
     {
         return string.Concat(
             element
-                .Attributes.Where(attribute => attribute.Name != "data-canonical-src")
+                .Attributes.Where(attribute =>
+                    attribute.Name != "data-canonical-src"
+                    && !attribute.Name.StartsWith(
+                        "data-markdowned-",
+                        StringComparison.Ordinal
+                    )
+                )
                 .Select(attribute =>
                     (attribute.Name, Value: Dehash(Decamo(attribute.Value)))
                 )

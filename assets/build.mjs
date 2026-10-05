@@ -56,8 +56,6 @@ const flags = ${JSON.stringify(flags)}
 const extensions = ${JSON.stringify(extensions)}
 const dependencies = ${JSON.stringify(dependencies)}
 const loaders = { ${loaders.join(',\n')} }
-const loaded = new Set()
-let starryNight
 
 // Same lookup as starry-night's flagToScope: names first, then extensions.
 export function scopeForFlag(flag) {
@@ -67,12 +65,11 @@ export function scopeForFlag(flag) {
   return dot === -1 ? extensions['.' + normal] : extensions[normal.slice(dot)]
 }
 
-async function grammarsFor(scope, found = []) {
-  if (loaded.has(scope) || found.some((grammar) => grammar.scopeName === scope) || !loaders[scope]) return found
+async function grammarsFor(scope, found) {
+  if (found.some((grammar) => grammar.scopeName === scope) || !loaders[scope]) return
   const grammar = (await loaders[scope]()).default
   found.push(grammar)
   for (const dependency of dependencies[scope]) await grammarsFor(dependency, found)
-  return found
 }
 
 function escape(text) {
@@ -87,18 +84,19 @@ function toHtml(node) {
   return '<span class="' + classes + '">' + children + '</span>'
 }
 
-// Highlights source code in the language of the scope; resolves to the markup of the lines.
-export async function highlight(source, scope) {
-  starryNight ??= await createStarryNight([], {
+// Highlights several snippets, [{ source, scope }]; resolves to the markup of each, in order.
+// All grammars are loaded first because starry-night only reads its options when it is created.
+export async function highlightAll(snippets) {
+  const grammars = []
+  for (const { scope } of snippets) await grammarsFor(scope, grammars)
+  const starryNight = await createStarryNight(grammars, {
     getOnigurumaUrlFetch: () => new URL('/assets/js/starry-night/onig.wasm', location.href)
   })
-  const grammars = await grammarsFor(scope)
-  grammars.forEach((grammar) => loaded.add(grammar.scopeName))
-  if (grammars.length > 0) await starryNight.register(grammars)
-  return toHtml(starryNight.highlight(source, scope))
+  return snippets.map(({ source, scope }) => toHtml(starryNight.highlight(source, scope)))
 }
 `
 
+writeFileSync(join(out, 'languages.json'), JSON.stringify({ flags, extensions }) + '\n')
 writeFileSync(join(here, 'starry-night.entry.mjs'), entry)
 
 await build({
