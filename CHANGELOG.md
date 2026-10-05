@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-preview.0.1.0] - 2026-10-05
+
 ### Added
 
 * `markdowned <input.md>` renders Markdown to a PDF with headless Chromium: GitHub-shaped HTML,
