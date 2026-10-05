@@ -21,6 +21,9 @@
     <ProjectReference Include="..\..\Markdowned.Cli\Markdowned.Cli.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Markdowned.Tests\Fakes\*.cs" LinkBase="Fakes" />
+  </ItemGroup>
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 </Project>

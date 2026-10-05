@@ -1,0 +1,12 @@
+using System.Collections.Concurrent;
+using System.Text.Json;
+
+namespace Markdowned.DevTools;
+
+internal sealed class DevToolsState
+{
+    public ConcurrentDictionary<int, TaskCompletionSource<JsonElement>> Pending { get; } =
+        new ConcurrentDictionary<int, TaskCompletionSource<JsonElement>>();
+
+    public int NextId => Interlocked.Increment(ref field);
+}
