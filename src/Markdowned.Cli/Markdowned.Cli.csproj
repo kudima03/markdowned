@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <IsAotCompatible>true</IsAotCompatible>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>markdowned</ToolCommandName>
+    <RootNamespace>Markdowned.Cli</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Markdowned.Cli</PackageId>
+    <Authors>Dmitry Kurochkin</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/kudima03/markdowned</PackageProjectUrl>
+    <PackageDescription>Render Markdown to a PDF that looks like github.com.</PackageDescription>
+    <PackageTags>markdown;pdf;github;cli</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Markdowned\Markdowned.csproj" />
+    <ProjectReference Include="..\Markdowned.Abstractions\Markdowned.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

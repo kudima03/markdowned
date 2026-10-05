@@ -1,0 +1,157 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  test:
+    name: Test
+    uses: ./.github/workflows/build-and-test.yml
+
+  native-linux:
+    name: Native ${{ matrix.rid }}
+    needs: [test]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: ubuntu-24.04-arm
+            rid: linux-arm64
+    defaults:
+      run:
+        working-directory: ./src
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.x.x
+    - name: Update apt package index
+      run: sudo apt-get update
+    - name: Install native toolchain
+      run: sudo apt-get install -y clang zlib1g-dev
+    - name: Publish binary
+      run: dotnet publish Markdowned.Cli -f net10.0 -r ${{ matrix.rid }} -c Release -p:PublishAot=true --output ../publish/${{ matrix.rid }}
+    - name: Rename binary
+      run: mv ../publish/${{ matrix.rid }}/Markdowned.Cli ../publish/${{ matrix.rid }}/markdowned
+    - name: Zip binary
+      run: zip -j ../markdowned-${{ github.ref_name }}-${{ matrix.rid }}.zip ../publish/${{ matrix.rid }}/markdowned
+    - name: Upload binary
+      uses: actions/upload-artifact@v7
+      with:
+        name: binary-${{ matrix.rid }}
+        path: markdowned-*.zip
+
+  native-macos:
+    name: Native osx-arm64
+    needs: [test]
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ./src
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.x.x
+    - name: Publish binary
+      run: dotnet publish Markdowned.Cli -f net10.0 -r osx-arm64 -c Release -p:PublishAot=true --output ../publish/osx-arm64
+    - name: Rename binary
+      run: mv ../publish/osx-arm64/Markdowned.Cli ../publish/osx-arm64/markdowned
+    - name: Zip binary
+      run: zip -j ../markdowned-${{ github.ref_name }}-osx-arm64.zip ../publish/osx-arm64/markdowned
+    - name: Upload binary
+      uses: actions/upload-artifact@v7
+      with:
+        name: binary-osx-arm64
+        path: markdowned-*.zip
+
+  native-windows:
+    name: Native win-x64
+    needs: [test]
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ./src
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.x.x
+    - name: Publish binary
+      run: dotnet publish Markdowned.Cli -f net10.0 -r win-x64 -c Release -p:PublishAot=true --output ../publish/win-x64
+    - name: Rename binary
+      run: Rename-Item -Path ..\publish\win-x64\Markdowned.Cli.exe -NewName markdowned.exe
+    - name: Zip binary
+      run: Compress-Archive -Path ..\publish\win-x64\markdowned.exe -DestinationPath ..\markdowned-${{ github.ref_name }}-win-x64.zip
+    - name: Upload binary
+      uses: actions/upload-artifact@v7
+      with:
+        name: binary-win-x64
+        path: markdowned-*.zip
+
+  nuget:
+    name: NuGet package
+    needs: [test]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.x.x
+    - name: Pack
+      run: dotnet pack Markdowned.Cli -c Release -p:PackageVersion=${{ github.ref_name }} --output .
+    - name: Upload package
+      uses: actions/upload-artifact@v7
+      with:
+        name: nupkg
+        path: src/*.nupkg
+
+  publish:
+    name: Publish to NuGet
+    needs: [nuget]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+    - name: Download package
+      uses: actions/download-artifact@v8
+      with:
+        name: nupkg
+        path: packages
+    - name: NuGet login
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: kudima03
+    - name: Push package
+      run: dotnet nuget push "packages/*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+  release:
+    name: Attach binaries to release
+    needs: [native-linux, native-macos, native-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Download binaries
+      uses: actions/download-artifact@v8
+      with:
+        pattern: binary-*
+        path: binaries
+        merge-multiple: true
+    - name: Create release
+      run: gh release create "${{ github.ref_name }}" binaries/* --repo "${{ github.repository }}" --title "${{ github.ref_name }}" --generate-notes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

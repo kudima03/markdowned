@@ -1,0 +1,1 @@
+import"./grammar-MHCU5XT2.js";var e={dependencies:["text.html.basic"],extensions:[".ejs",".ect",".ejs.t",".jst"],names:["ejs"],patterns:[{begin:"<%=?",captures:{0:{name:"punctuation.section.embedded.js"}},end:"%>",name:"source.js.embedded.html",patterns:[{include:"source.js"}]},{include:"text.html.basic"}],scopeName:"text.html.js"},t=e;export{t as default};

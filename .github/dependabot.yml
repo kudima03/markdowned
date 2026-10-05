@@ -2,11 +2,22 @@ version: 2
 updates:
 - package-ecosystem: nuget
   directories:
-    - "src/<repo-name>"
-    - "src/Tests/<repo-name>.Tests"
+    - "src/Markdowned"
+    - "src/Markdowned.Abstractions"
+    - "src/Markdowned.Cli"
+    - "src/Tests/Markdowned.Tests"
+    - "src/Tests/Markdowned.Cli.Tests"
   schedule:
     interval: daily
 - package-ecosystem: "github-actions"
   directory: "/"
+  schedule:
+    interval: weekly
+- package-ecosystem: "devcontainers"
+  directory: "/"
+  schedule:
+    interval: weekly
+- package-ecosystem: npm
+  directory: "/assets"
   schedule:
     interval: weekly

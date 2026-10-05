@@ -1,0 +1,1 @@
+import"./grammar-MHCU5XT2.js";var e={dependencies:["source.nunjucks","text.html.basic"],extensions:[".njk"],names:["nunjucks","njk"],patterns:[{include:"source.nunjucks"},{include:"text.html.basic"}],scopeName:"text.html.nunjucks"},n=e;export{n as default};

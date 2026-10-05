@@ -62,3 +62,15 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# Binary assets (the catch-all above would otherwise normalise line endings in them)
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.zip binary
+*.pdf binary
+*.wasm binary

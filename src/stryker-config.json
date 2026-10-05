@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-net/master/src/Stryker.Core/Stryker.Core/Schemas/stryker-config.json",
+  "stryker-config": {
+    "solution": "Markdowned.sln",
+    "project-info": {
+      "name": "github.com/kudima03/markdowned"
+    },
+    "reporters": ["progress", "html"],
+    "mutation-level": "Complete"
+  }
+}
