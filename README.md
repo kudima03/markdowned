@@ -12,8 +12,6 @@ into HTML shaped like GitHub's, using GitHub's CSS, fonts and client-side render
 that HTML to PDF with headless Chromium. The main goal is output as close to github.com as
 possible.
 
-> **Status:** under construction. See [PLAN.md](PLAN.md) for the design and delivery plan.
-
 ## Installation
 
 ```shell

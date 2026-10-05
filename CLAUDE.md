@@ -5,9 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 
 `markdowned` renders Markdown to a PDF that looks like github.com: Markdig → GitHub-shaped
-HTML → headless Chromium `Page.printToPDF` over a small AOT-safe DevTools client. `PLAN.md`
-holds the architecture, decisions and PR sequence — read it first. Fidelity to GitHub is the
-main goal; every deviation is measured and listed in `docs/fidelity.md`.
+HTML → headless Chromium `Page.printToPDF` over a small AOT-safe DevTools client. Fidelity to
+GitHub is the main goal; every deviation is measured and listed in `docs/fidelity.md`.
 
 ## Commands
 
