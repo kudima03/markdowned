@@ -6,7 +6,7 @@ namespace Markdowned.Markdown.Renderers;
 
 public sealed class GitHubHeadingRenderer : HtmlObjectRenderer<HeadingBlock>
 {
-    private const string LinkIcon =
+    public const string LinkIcon =
         "<svg data-component=\"Octicon\" class=\"octicon octicon-link\" viewBox=\"0 0 16 16\" version=\"1.1\" width=\"16\" "
         + "height=\"16\" aria-hidden=\"true\"><path d=\"m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 "
         + "4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 "
@@ -17,14 +17,17 @@ public sealed class GitHubHeadingRenderer : HtmlObjectRenderer<HeadingBlock>
         + "0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z\">"
         + "</path></svg>";
 
-    private readonly Dictionary<string, int> _seen = new Dictionary<string, int>(
-        StringComparer.Ordinal
-    );
+    private readonly HeadingSlugs _slugs;
+
+    public GitHubHeadingRenderer(HeadingSlugs slugs)
+    {
+        _slugs = slugs;
+    }
 
     protected override void Write(HtmlRenderer renderer, HeadingBlock obj)
     {
         string text = new InlineText(obj.Inline).TextValue;
-        string slug = Unique(
+        string slug = _slugs.Unique(
             new HeadingSlug(new Pure.Primitives.String.String(text)).TextValue
         );
 
@@ -48,19 +51,5 @@ public sealed class GitHubHeadingRenderer : HtmlObjectRenderer<HeadingBlock>
         _ = renderer.Write("\">");
         _ = renderer.Write(LinkIcon);
         _ = renderer.WriteLine("</a></div>");
-    }
-
-    private string Unique(string slug)
-    {
-        if (!_seen.TryGetValue(slug, out int count))
-        {
-            _seen[slug] = 0;
-
-            return slug;
-        }
-
-        _seen[slug] = count + 1;
-
-        return $"{slug}-{count + 1}";
     }
 }

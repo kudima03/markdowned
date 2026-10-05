@@ -29,6 +29,14 @@ public sealed class GitHubHtmlExtension : IMarkdownExtension
         }
 
         FootnoteReferences references = new FootnoteReferences();
+        HeadingSlugs slugs = new HeadingSlugs();
+        HtmlSanitizer sanitizer = new HtmlSanitizer(slugs);
+        _ = html.ObjectRenderers.ReplaceOrAdd<HtmlBlockRenderer>(
+            new GitHubHtmlBlockRenderer(sanitizer)
+        );
+        _ = html.ObjectRenderers.ReplaceOrAdd<HtmlInlineRenderer>(
+            new GitHubHtmlInlineRenderer(sanitizer)
+        );
         _ = html.ObjectRenderers.ReplaceOrAdd<AlertBlockRenderer>(
             new GitHubAlertRenderer()
         );
@@ -42,7 +50,7 @@ public sealed class GitHubHtmlExtension : IMarkdownExtension
             new GitHubFrontMatterRenderer()
         );
         _ = html.ObjectRenderers.ReplaceOrAdd<HeadingRenderer>(
-            new GitHubHeadingRenderer()
+            new GitHubHeadingRenderer(slugs)
         );
         _ = html.ObjectRenderers.ReplaceOrAdd<ParagraphRenderer>(
             new GitHubParagraphRenderer()

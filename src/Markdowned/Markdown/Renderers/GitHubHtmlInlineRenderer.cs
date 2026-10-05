@@ -1,0 +1,20 @@
+using Markdig.Renderers;
+using Markdig.Renderers.Html;
+using Markdig.Syntax.Inlines;
+
+namespace Markdowned.Markdown.Renderers;
+
+public sealed class GitHubHtmlInlineRenderer : HtmlObjectRenderer<HtmlInline>
+{
+    private readonly HtmlSanitizer _sanitizer;
+
+    public GitHubHtmlInlineRenderer(HtmlSanitizer sanitizer)
+    {
+        _sanitizer = sanitizer;
+    }
+
+    protected override void Write(HtmlRenderer renderer, HtmlInline obj)
+    {
+        _ = renderer.Write(_sanitizer.Sanitize(obj.Tag));
+    }
+}
