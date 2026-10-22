@@ -10,7 +10,7 @@
     <RootNamespace>Markdowned</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Markdig" Version="1.4.1" />
+    <PackageReference Include="Markdig" Version="1.4.2" />
     <PackageReference Include="Pure.Primitives" Version="3.7.0" />
   </ItemGroup>
   <ItemGroup>
