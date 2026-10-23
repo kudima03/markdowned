@@ -4,10 +4,14 @@
 |---|---|---|
 | @antfu/install-pkg | 2.1.0 | MIT |
 | @braintree/sanitize-url | 7.1.2 | MIT |
-| @chevrotain/types | 11.1.2 | Apache-2.0 |
+| @chevrotain/cst-dts-gen | 13.2.0 | Apache-2.0 |
+| @chevrotain/gast | 13.2.0 | Apache-2.0 |
+| @chevrotain/regexp-to-ast | 13.2.0 | Apache-2.0 |
+| @chevrotain/types | 13.2.0 | Apache-2.0 |
+| @chevrotain/utils | 13.2.0 | Apache-2.0 |
 | @iconify/types | 2.0.0 | MIT |
 | @iconify/utils | 3.1.7 | MIT |
-| @mermaid-js/parser | 1.2.1 | MIT |
+| @mermaid-js/parser | 2.0.1 | MIT |
 | @types/d3 | 7.4.3 | MIT |
 | @types/d3-array | 3.2.2 | MIT |
 | @types/d3-axis | 3.0.6 | MIT |
@@ -41,6 +45,7 @@
 | @types/d3-zoom | 3.0.9 | MIT |
 | @types/geojson | 7946.0.16 | MIT |
 | @upsetjs/venn.js | 2.0.0 | MIT |
+| chevrotain | 13.2.0 | Apache-2.0 |
 | commander | 7.2.0 | MIT |
 | cose-base | 1.0.3 | MIT |
 | cytoscape | 3.34.3 | MIT |
@@ -82,18 +87,18 @@
 | dayjs | 1.11.23 | MIT |
 | delaunator | 5.1.0 | ISC |
 | dompurify | 3.4.16 | (MPL-2.0 OR Apache-2.0) |
+| elkjs | 0.9.3 | EPL-2.0 |
 | es-toolkit | 1.52.0 | MIT |
-| fastdom | 1.0.12 | MIT |
 | hachure-fill | 0.5.2 | MIT |
 | iconv-lite | 0.6.3 | MIT |
 | import-meta-resolve | 4.2.0 | MIT |
 | internmap | 2.0.3 | ISC |
-| katex | 0.16.47 | MIT |
+| katex | 0.18.10 | MIT |
 | khroma | 2.1.0 | The MIT License (MIT) |
 | layout-base | 1.0.2 | MIT |
 | lodash-es | 4.18.1 | MIT |
 | marked | 16.4.2 | MIT |
-| mermaid | 11.17.2 | MIT |
+| mermaid | 12.2.0 | MIT |
 | package-manager-detector | 1.9.0 | MIT |
 | path-data-parser | 0.1.0 | MIT |
 | points-on-curve | 0.2.0 | MIT |
@@ -102,7 +107,6 @@
 | roughjs | 4.6.6 | MIT |
 | rw | 1.3.3 | BSD-3-Clause |
 | safer-buffer | 2.1.2 | MIT |
-| strictdom | 1.0.1 | MIT |
 | stylis | 4.4.0 | MIT |
 | tinyexec | 1.3.1 | MIT |
 | ts-dedent | 2.3.0 | MIT |
