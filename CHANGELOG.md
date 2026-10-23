@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-preview.0.2.0] - 2026-10-23
+
+### Changed
+
+* Bundled mermaid updated from 11.17.2 to 12.2.0. The bundle now includes elkjs (EPL-2.0) and
+  grows the tool package by about 2 MB.
+
+## [0.1.0-preview.0.1.1] - 2026-10-22
+
+### Changed
+
+* Markdig updated from 1.4.0 to 1.4.2 and Pure.Primitives from 3.6.5 to 3.7.0.
+
 ## [0.1.0-preview.0.1.0] - 2026-10-05
 
 ### Added
