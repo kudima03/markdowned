@@ -18,6 +18,45 @@ possible.
 dotnet tool install -g Markdowned.Cli
 ```
 
+Or use a native binary, which needs no .NET:
+
+**linux-x64**
+
+```shell
+wget https://github.com/kudima03/markdowned/releases/download/0.1.0-preview.0.1.0/markdowned-0.1.0-preview.0.1.0-linux-x64.zip
+unzip markdowned-0.1.0-preview.0.1.0-linux-x64.zip
+sudo mv markdowned /usr/local/bin/
+markdowned --version
+```
+
+**linux-arm64**
+
+```shell
+wget https://github.com/kudima03/markdowned/releases/download/0.1.0-preview.0.1.0/markdowned-0.1.0-preview.0.1.0-linux-arm64.zip
+unzip markdowned-0.1.0-preview.0.1.0-linux-arm64.zip
+sudo mv markdowned /usr/local/bin/
+markdowned --version
+```
+
+**osx-arm64**
+
+```shell
+wget https://github.com/kudima03/markdowned/releases/download/0.1.0-preview.0.1.0/markdowned-0.1.0-preview.0.1.0-osx-arm64.zip
+unzip markdowned-0.1.0-preview.0.1.0-osx-arm64.zip
+sudo mv markdowned /usr/local/bin/
+markdowned --version
+```
+
+**win-x64** (PowerShell)
+
+```powershell
+Invoke-WebRequest https://github.com/kudima03/markdowned/releases/download/0.1.0-preview.0.1.0/markdowned-0.1.0-preview.0.1.0-win-x64.zip -OutFile markdowned.zip
+Expand-Archive markdowned.zip -DestinationPath .
+.\markdowned.exe --version
+```
+
+Put `markdowned.exe` in a folder on your `PATH` to run it from anywhere.
+
 The first run without `--browser` downloads a pinned `chrome-headless-shell` (about 120 MB) into
 the per-user cache; `markdowned install-browser` does it ahead of time. On a minimal Linux
 machine Chromium needs shared libraries, e.g. on Debian/Ubuntu:
