@@ -5,6 +5,14 @@ updates:
     - "src/Markdowned"
     - "src/Markdowned.Abstractions"
     - "src/Markdowned.Cli"
+  schedule:
+    interval: daily
+  groups:
+    production:
+      patterns:
+        - "*"
+- package-ecosystem: nuget
+  directories:
     - "src/Tests/Markdowned.Tests"
     - "src/Tests/Markdowned.Cli.Tests"
   schedule:
@@ -21,3 +29,8 @@ updates:
   directory: "/assets"
   schedule:
     interval: weekly
+  groups:
+    production:
+      dependency-type: production
+      patterns:
+        - "*"
