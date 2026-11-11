@@ -89,7 +89,12 @@ public sealed record DevToolsConnection : IDevToolsSession
             }
         }
 
-        _ = await Task.WhenAny(_reader, Task.Delay(TimeSpan.FromSeconds(2)));
+        using CancellationTokenSource delayCancellation = new CancellationTokenSource();
+        _ = await Task.WhenAny(
+            _reader,
+            Task.Delay(TimeSpan.FromSeconds(2), delayCancellation.Token)
+        );
+        await delayCancellation.CancelAsync();
         _socket.Abort();
         await _reader;
         _socket.Dispose();
