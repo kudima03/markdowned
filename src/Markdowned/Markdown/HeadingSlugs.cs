@@ -3,9 +3,7 @@ namespace Markdowned.Markdown;
 /// <summary>Per-document heading ids: GitHub appends -1, -2, … to repeated slugs.</summary>
 public sealed class HeadingSlugs
 {
-    private readonly Dictionary<string, int> _seen = [with(
-        StringComparer.Ordinal
-    )];
+    private readonly Dictionary<string, int> _seen = [with(StringComparer.Ordinal)];
 
     public string Unique(string slug)
     {
