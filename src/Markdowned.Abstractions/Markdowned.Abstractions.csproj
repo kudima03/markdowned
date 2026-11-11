@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -10,6 +10,6 @@
     <RootNamespace>Markdowned.Abstractions</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Pure.Primitives.Abstractions" Version="4.3.0" />
+    <PackageReference Include="Pure.Primitives.Abstractions" Version="4.4.0" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 {
   "name": "markdowned",
-  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-11.0",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}

@@ -30,7 +30,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.x.x
+        dotnet-version: 11.x.x
     - name: Update apt package index
       run: sudo apt-get update
     - name: Install native toolchain
@@ -59,7 +59,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.x.x
+        dotnet-version: 11.x.x
     - name: Publish binary
       run: dotnet publish Markdowned.Cli -f net10.0 -r osx-arm64 -c Release -p:PublishAot=true --output ../publish/osx-arm64
     - name: Rename binary
@@ -84,7 +84,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.x.x
+        dotnet-version: 11.x.x
     - name: Publish binary
       run: dotnet publish Markdowned.Cli -f net10.0 -r win-x64 -c Release -p:PublishAot=true --output ../publish/win-x64
     - name: Rename binary
@@ -109,7 +109,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.x.x
+        dotnet-version: 11.x.x
     - name: Pack
       run: dotnet pack Markdowned.Cli -c Release -p:PackageVersion=${{ github.ref_name }} --output .
     - name: Upload package

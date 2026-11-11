@@ -3,15 +3,11 @@ namespace Markdowned.Markdown;
 /// <summary>Per-document footnote bookkeeping: GitHub's id suffix and reference counts.</summary>
 public sealed class FootnoteReferences
 {
-    private readonly Dictionary<string, int> _counts = new Dictionary<string, int>(
-        StringComparer.Ordinal
-    );
+    private readonly Dictionary<string, int> _counts = [with(StringComparer.Ordinal)];
 
     public string Suffix { get; } = "a54e445bb694be13f72d1195ac423c7d";
 
-    private readonly Dictionary<string, int> _numbers = new Dictionary<string, int>(
-        StringComparer.Ordinal
-    );
+    private readonly Dictionary<string, int> _numbers = [with(StringComparer.Ordinal)];
 
     /// <summary>Footnote number: the order in which footnotes are first referenced.</summary>
     public int Number(string label)
