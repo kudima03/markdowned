@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-preview.0.3.0] - 2026-11-11
+
+### Added
+
+* .NET 11 support: the tool package now targets net10.0 and net11.0.
+
+### Changed
+
+* Markdig updated from 1.4.2 to 1.6.0, Pure.Primitives from 3.7.0 to 3.8.0 and Pure.Primitives.Abstractions from 4.3.0 to 4.4.0.
+
 ## [0.1.0-preview.0.2.0] - 2026-10-23
 
 ### Changed
